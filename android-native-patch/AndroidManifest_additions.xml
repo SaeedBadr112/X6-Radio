@@ -1,0 +1,27 @@
+<!--
+  أضف هذه الأسطر يدوياً داخل android/app/src/main/AndroidManifest.xml
+  (الذي يُنشئه أمر: npx cap add android)
+-->
+
+<!-- 1) ضمن <manifest> (بجانب uses-permission الموجودة أصلاً مثل INTERNET) -->
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+<uses-permission android:name="android.permission.WAKE_LOCK" />
+
+<!--
+  2) ضمن <application> ... </application>، بجانب <activity android:name=".MainActivity" ...>
+     أضف تعريف الخدمة الجديدة كعنصر شقيق للـ Activity:
+-->
+<service
+    android:name=".BackgroundAudioService"
+    android:foregroundServiceType="mediaPlayback"
+    android:exported="false" />
+
+<!--
+  ملاحظات:
+  - FOREGROUND_SERVICE_MEDIA_PLAYBACK مطلوب تحديداً بدءاً من Android 14 (API 34).
+  - POST_NOTIFICATIONS مطلوب بدءاً من Android 13 (API 33) لعرض إشعار التحكم؛
+    بدونها ستعمل الخدمة وتبقي الصوت شغالاً لكن دون ظهور الإشعار. يُفضّل لاحقاً
+    طلب هذه الصلاحية وقت التشغيل (Runtime Permission) بدلاً من الاكتفاء بالمانيفست فقط.
+-->

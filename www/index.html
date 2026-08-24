@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>X6 Radio</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="mobile.css">
+<script src="capacitor.js"></script>
+</head>
+<body>
+
+<!-- كود صيد وطباعة الأخطاء مؤقتاً داخل المحاكي -->
+<div id="error-log" style="position:fixed; top:0; left:0; width:100%; max-height:200px; overflow-y:auto; background:rgba(255,0,0,0.9); color:white; font-family:monospace; font-size:12px; z-index:999999; padding:10px; display:none;"></div>
+<script>
+    window.onerror = function(message, source, lineno, colno, error) {
+        var log = document.getElementById('error-log');
+        log.style.display = 'block';
+        log.innerHTML += '❌ خطأ: ' + message + ' <br> في سطر: ' + lineno + '<br><br>';
+        return false;
+    };
+</script>
+
+<!-- ===== التهيئة المبكرة للغة والثيم (تمنع الوميض عند التحميل) ===== -->
+<script>
+(function() {
+    try {
+        // اللغة والاتجاه فوراً قبل أول رسم
+        var lang = localStorage.getItem('setting_language') || 'en';
+        var isAr = (lang === 'ar');
+        document.documentElement.lang = isAr ? 'ar' : 'en';
+        document.documentElement.dir = isAr ? 'rtl' : 'ltr';
+        document.body.style.direction = isAr ? 'rtl' : 'ltr';
+        document.body.style.textAlign = isAr ? 'right' : 'left';
+        // الثيم فوراً قبل أول رسم
+        var theme = localStorage.getItem('x6RadioTheme') || 'default';
+        var themeMap = { 'default': 'default-theme', 'dark': 'dark-high-contrast', 'light': 'light-theme', 'red': 'red-theme' };
+        document.body.classList.add(themeMap[theme] || 'default-theme');
+    } catch (e) {}
+})();
+</script>
+
+<!-- ===== شاشة البداية (تغطي التحميل وتغيير اللغة) ===== -->
+<div id="splashScreen">
+    <img src="./assets/001.png" alt="X6 Radio">
+    <div class="splash-title">X6 Radio</div>
+</div>
+
+<div class="phone">
+
+  <!-- شريط الحالة -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <span class="status-icons"><i class="fas fa-wifi"></i><i class="fas fa-battery-three-quarters"></i></span>
+  </div>
+
+  <div class="app-card">
+
+    <!-- الهيدر -->
+    <header class="app-header">
+      <button id="btnOpenDrawer" class="icon-btn" aria-label="القائمة"><i class="fas fa-bars"></i></button>
+      <h1>X6 Radio</h1>
+      <div class="app-logo"><img src="./assets/002.png" alt="X6 Radio"></div>
+    </header>
+
+    <!-- شريط البحث الرئيسي -->
+    <div class="search-bar">
+      <i class="fas fa-search"></i>
+      <input type="text" id="searchInput" placeholder="ابحث عن محطة إذاعة، أو مدينة...">
+      <i class="fas fa-times-circle clear-search" id="clearSearchBtn" style="display:none;"></i>
+    </div>
+
+    <!-- ============ شاشة: المحطات ============ -->
+    <main class="view active" id="stations-tab">
+
+      <div class="now-playing-card">
+        <div class="np-visual-row">
+          <div class="np-artwork">
+            <img id="stationIcon" src="./assets/666.png" alt="شعار المحطة">
+            <button id="changeIconBtn" class="np-artwork-menu" aria-label="تغيير أيقونة المحطة"><i class="fas fa-ellipsis-vertical"></i></button>
+          </div>
+          <div class="np-equalizer" id="npEqualizer"><!-- الأعمدة تُنشأ عبر JS --></div>
+        </div>
+
+        <p class="np-title" id="currentStationName">لم يتم اختيار محطة</p>
+        <p class="np-subtitle" id="currentStationCountry"><i class="fas fa-location-dot"></i> </p>
+
+       <div class="np-controls">
+    <div class="np-side np-side-start">
+        <!-- 1. زر التسجيل -->
+        <button class="control-btn record-btn" id="recordIconBtn" aria-label="تسجيل">
+            <span class="record-icon-outer">
+                <span class="record-icon-inner"></span>
+            </span>
+        </button>
+        <span id="recordTimer" class="record-timer"></span>
+        
+        <!-- 2. المفضلة (نُقلت من النهاية إلى هنا) -->
+        <button class="control-btn" id="favHeart" aria-label="مفضلة">
+            <i class="fas fa-heart"></i>
+        </button>
+        
+        <!-- 3. زر التالي -->
+        <button class="control-btn" id="nextStationBtn" aria-label="المحطة التالية">
+            <i class="fas fa-forward-step"></i>
+        </button>
+    </div>
+
+    <!-- 4. زر التشغيل (في المنتصف) -->
+    <button class="play-btn" id="playPauseBtn" aria-label="تشغيل / إيقاف">
+        <i class="fas fa-play"></i>
+    </button>
+
+    <div class="np-side np-side-end">
+        <!-- 5. الوضع الصوتي (Preset) -->
+        <div class="preset-wrapper">
+            <span class="preset-pill" id="currentPresetDisplay">قياسى</span>
+            <!-- 6. أزرار الوضع الصوتي -->
+            <div class="preset-arrows">
+                <button class="preset-arrow" id="prevPresetBtn" aria-label="السابق">
+                    <i class="fas fa-chevron-up"></i>
+                </button>
+                <button class="preset-arrow" id="nextPresetBtn" aria-label="التالي">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+        <p class="np-timer" id="timerUp">00:00:00</p>
+      </div>
+
+<!-- داخل list-header-row -->
+<div class="list-header-row">
+    <div class="mini-search" id="countrySearchBox">
+        <input type="text" id="countriesSearchInput" placeholder="بحث">
+    </div>
+    <div class="country-details" style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
+        <img id="selectedCountryFlag" src="./assets/Icons_of_all_countries/nac.png" alt="Flag" class="country-flag-icon" style="width:40px; height:30px; object-fit:contain; flex-shrink:0;" onerror="if(window.resolveFlagError){window.resolveFlagError(this)}else{this.style.display='none'}">
+        <i id="selectedCountryIconFallback" class="fas fa-flag" style="display:none; font-size:18px;"></i>
+        <span id="selectedCountryName" class="list-title" style="font-size:20px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">أسم الدولة أو التصنيف</span>
+    </div>
+</div>
+
+      <div class="split-row">
+        <ul class="country-list" id="countriesList">
+          <!-- تُنشأ عبر JS من مصفوفة countries -->
+        </ul>
+
+        <ul class="station-list" id="stationsContainer">
+          <!-- تُنشأ عبر JS من مصفوفة stations -->
+        </ul>
+      </div>
+    </main>
+
+    <!-- ============ شاشة: نتائج البحث ============ -->
+    <main class="view" id="search-tab">
+      <p class="results-count" id="searchQueryLabel">نتائج البحث عن: <span id="searchQueryText"></span></p>
+      <ul class="station-list full-width" id="searchResultsContainer"></ul>
+    </main>
+
+    <!-- ============ شاشة: المفضلة ============ -->
+    <main class="view" id="favorites-tab">
+      <p class="list-title standalone">المفضلة</p>
+      <p class="empty-hint" id="favoritesEmptyHint"></p>
+      <ul class="station-list full-width" id="favoritesContainer"></ul>
+    </main>
+
+    <!-- ============ شاشة: إضافة محطة ============ -->
+    <main class="view" id="add-station-tab">
+      <p class="list-title standalone"><i class="fas fa-circle-plus"></i> إضافة محطة إذاعية جديدة</p>
+      <form id="addStationForm" class="form-card">
+        <label>اسم المحطة</label>
+        <input type="text" id="newStationName" placeholder="مثال: إذاعة القرآن الكريم" required>
+
+        <label>رابط البث (URL)</label>
+        <input type="url" id="newStationUrl" placeholder="https://example.com/stream" required>
+
+        <label>الدولة</label>
+        <select id="newStationCountry"></select>
+
+        <label>النوع (اختياري)</label>
+        <input type="text" id="newStationGenre" placeholder="مثل: ديني، موسيقى">
+
+        <label>رابط الأيقونة (اختياري)</label>
+        <input type="url" id="newStationIcon" placeholder="https://example.com/logo.png">
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" id="cancelAddStation">إلغاء</button>
+          <button type="submit" class="btn-primary" id="submitAddStation"><i class="fas fa-save"></i> إضافة</button>
+        </div>
+      </form>
+    </main>
+
+    <!-- ============ شاشة: السجل ============ -->
+    <main class="view" id="history-tab">
+      <div class="history-toolbar">
+        <p class="list-title standalone">السجل <span class="count-badge" id="historyCount">0</span></p>
+        <div class="history-actions">
+          <button class="btn-chip" id="exportHistoryBtn"><i class="fas fa-download"></i> تصدير</button>
+          <button class="btn-chip danger" id="clearAllHistoryBtn"><i class="fas fa-trash"></i> مسح الكل</button>
+        </div>
+      </div>
+      <div class="mini-search full" >
+        <i class="fas fa-search"></i>
+        <input type="text" id="historySearchInput" placeholder="بحث في السجل...">
+      </div>
+      <ul class="station-list full-width" id="historyContainer"></ul>
+    </main>
+
+<!-- ============ شاشة: المعادل الصوتي ============ -->
+<main class="view" id="audio-eq-tab">
+    <div class="eq-header">
+        <p class="list-title standalone">معادل الصوت</p>
+        <button class="eq-power" id="eqPowerBtn" aria-label="تشغيل/إيقاف المعادل"><i class="fas fa-power-off"></i></button>
+    </div>
+    <div class="eq-sliders" id="eq-sliders"><!-- تُنشأ عبر JS --></div>
+    <div class="eq-presets" id="eqPresetButtons"><!-- تُنشأ عبر JS --></div>
+    <div class="eq-actions">
+        <button class="btn-chip" id="eqSaveCustomBtn"><i class="fas fa-save"></i> حفظ مخصص</button>
+        <button class="btn-chip danger" id="eqResetBtn"><i class="fas fa-rotate-left"></i> إعادة ضبط</button>
+    </div>
+</main>
+
+    <!-- الشريط السفلي -->
+   <nav class="bottom-nav">
+  <button class="nav-item" data-tab="audio-eq-tab"><i class="fas fa-sliders"></i><span data-i18n="tab_eq">معادل</span></button>
+  <button class="nav-item" data-tab="history-tab"><i class="fas fa-clock-rotate-left"></i><span data-i18n="tab_history">السجل</span></button>
+  <button class="nav-item nav-add" data-tab="add-station-tab"><i class="fas fa-plus"></i></button>
+  <button class="nav-item" data-tab="favorites-tab"><i class="fas fa-heart"></i><span data-i18n="tab_favorites">مفضلة</span></button>
+  <button class="nav-item active" data-tab="stations-tab"><i class="fas fa-tower-broadcast"></i><span data-i18n="tab_stations">محطات</span></button>
+</nav>
+
+    <!-- عنصر مخفي لتجنب أخطاء appendChild في سطح المكتب (يُستخدم في appInit.js) -->
+    <div id="playerStatus" style="display:none;"></div>
+    <!-- حاوية المؤثرات الصوتية Canvas (مخفية في الجوال) -->
+    <div id="audioVisualizerWrapper" style="display:none;">
+      <canvas id="audioVisualizerCanvas"></canvas>
+    </div>
+
+  </div>
+
+  <!-- تعتيم القائمة الجانبية -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+
+  <!-- القائمة الجانبية -->
+  <aside class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-brand"><img src="./assets/003.png" alt="X6 Radio"><span>X6 Radio</span></div>
+      <button class="icon-btn" id="btnCloseDrawer" aria-label="إغلاق"><i class="fas fa-xmark"></i></button>
+    </div>
+
+    <div class="drawer-menu" id="drawerMenu">
+
+      <!-- ملف -->
+      <div class="menu-group" data-group="file">
+        <button class="menu-group-header"><i class="fas fa-file"></i><span>ملف</span><i class="fas fa-chevron-left chevron"></i></button>
+        <div class="menu-group-body">
+          <button class="menu-row" id="menuOpenURL"><i class="fas fa-link"></i> فتح رابط البث</button>
+          <div class="menu-divider"></div>
+          <button class="menu-row" id="menuImportStations"><i class="fas fa-file-import"></i> استيراد المحطات</button>
+          <button class="menu-row" id="menuExportStations"><i class="fas fa-file-export"></i> تصدير المحطات</button>
+        </div>
+      </div>
+
+      <!-- تشغيل -->
+<div class="menu-group" data-group="playback">
+  <button class="menu-group-header"><i class="fas fa-play"></i><span>تشغيل</span><i class="fas fa-chevron-left chevron"></i></button>
+  <div class="menu-group-body">
+    <button class="menu-row" id="menuResume"><i class="fas fa-play"></i> استئناف</button>
+    <button class="menu-row" id="menuStop"><i class="fas fa-stop"></i> إيقاف الآن</button>
+    <div class="menu-divider"></div>
+    <button class="menu-row" id="menuShuffle"><i class="fas fa-shuffle"></i> تشغيل عشوائي</button>
+  </div>
+</div>
+
+<!-- إيقاف بعد مدة (مجموعة مستقلة) -->
+<div class="menu-group" data-group="sleep-timer">
+  <button class="menu-group-header">
+    <i class="fas fa-clock"></i>
+    <span>إيقاف بعد مدة</span>
+    <span class="row-value" id="sleepTimerValue">إيقاف</span>
+    <i class="fas fa-chevron-left chevron"></i>
+  </button>
+  <div class="menu-group-body">
+    <button class="menu-row timer-option" data-minutes="20">20 دقيقة</button>
+    <button class="menu-row timer-option" data-minutes="40">40 دقيقة</button>
+    <button class="menu-row timer-option" data-minutes="60">60 دقيقة</button>
+    <button class="menu-row timer-option" data-minutes="80">80 دقيقة</button>
+    <button class="menu-row" id="timerCancelOption" style="color: #dc2626;">إلغاء المؤقت</button>
+  </div>
+</div>
+
+    <!-- صوت -->
+<div class="menu-group" data-group="sound">
+    <button class="menu-group-header"><i class="fas fa-volume-high"></i><span>صوت</span><i class="fas fa-chevron-left chevron"></i></button>
+    <div class="menu-group-body">
+        
+        <!-- صف: ضاغط الصوت -->
+        <div class="menu-row toggle-row">
+            <i class="fas fa-compress"></i>
+            <span>ضاغط الصوت</span>
+            <span class="switch" id="compressorSwitch" data-on="false">
+                <span class="switch-knob"></span>
+            </span>
+        </div>
+
+        <!-- صف: فصل ستيريو -->
+        <div class="menu-row stereo-row">
+            <i class="fas fa-headphones"></i>
+            <span>فصل ستيريو</span>
+            <div class="stereo-buttons">
+                <button class="stereo-btn active" data-stereo="center">وسط</button>
+                <button class="stereo-btn" data-stereo="left">يسار</button>
+                <button class="stereo-btn" data-stereo="right">يمين</button>
+            </div>
+        </div>
+
+        <!-- صف: جهاز إخراج -->
+        <div class="menu-row output-row">
+            <i class="fas fa-tv"></i>
+            <span>جهاز إخراج</span>
+            <div class="output-buttons">
+                <button class="output-btn active" data-device="default">الافتراضي</button>
+                <button class="output-btn" data-device="select">جهاز آخر</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+    
+<!-- المظهر (مستقل) -->
+<span class="drawer-section-sep" data-i18n="drawer_section_appearance">التخصيص</span>
+<div class="menu-row theme-row">
+    <span><i class="fas fa-palette"></i> المظهر</span>
+    <div class="chip-group" id="themeChips">
+        <button class="chip active" data-theme="default">افتراضي</button>
+        <button class="chip" data-theme="dark">داكن</button>
+        <button class="chip" data-theme="light">فاتح</button>
+        <button class="chip" data-theme="red">أحمر</button>
+    </div>
+</div>
+
+<!-- الإعدادات (مستقل) -->
+<button class="menu-row" id="menuOpenSettings">
+    <i class="fas fa-gear"></i> الإعدادات
+    <i class="fas fa-chevron-left chevron-sm"></i>
+</button>
+
+      <!-- مساعدة -->
+      <div class="menu-group" data-group="help">
+        <button class="menu-group-header"><i class="fas fa-circle-question"></i><span>مساعدة</span><i class="fas fa-chevron-left chevron"></i></button>
+        <div class="menu-group-body">
+          <button class="menu-row" id="menuDebug"><i class="fas fa-bug"></i> تصحيح الأخطاء</button>
+          <button class="menu-row" id="menuFeedback"><i class="fas fa-envelope"></i> إرسال ملاحظات</button>
+          <div class="menu-divider"></div>
+          <button class="menu-row" id="menuAboutHelp"><i class="fas fa-circle-info"></i> حول</button>
+          <button class="menu-row" id="menuLicense"><i class="fas fa-file-contract"></i> الترخيص</button>
+          <button class="menu-row" id="menuOpenSource"><i class="fab fa-github"></i> مفتوح المصدر</button>
+          <button class="menu-row" id="menuReleaseNotes"><i class="fas fa-scroll"></i> ملاحظات الإصدار</button>
+          <div class="menu-divider"></div>
+          <button class="menu-row" id="menuCheckForUpdates"><i class="fas fa-arrows-rotate"></i> البحث عن تحديثات</button>
+          <button class="menu-row" id="menuReload"><i class="fas fa-arrow-rotate-left"></i> إعادة ضبط التطبيق</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- خروج -->
+    <button class="drawer-exit" id="menuExit"><i class="fas fa-right-from-bracket"></i> خروج</button>
+
+    <div class="drawer-footer"><i class="fas fa-circle-info"></i><span>الإصدار 2.0.0</span></div>
+  </aside>
+
+  <!-- شاشة الإعدادات الفرعية -->
+  <div class="subscreen" id="settingsScreen">
+    <div class="subscreen-header">
+      <button class="icon-btn" id="btnBackFromSettings"><i class="fas fa-chevron-right"></i></button>
+      <span>الإعدادات</span>
+    </div>
+<div class="subscreen-body">
+  <p class="settings-group-title">عام</p>
+  <div class="settings-card">
+</div>
+    <!-- تشغيل تلقائى للمحطة الأخيرة (Switch) -->
+    <div class="settings-row">
+      <span>تشغيل تلقائى للمحطة الأخيرة</span>
+      <span class="switch" data-on="true" data-setting="autoResume"><span class="switch-knob"></span></span>
+    </div>
+
+    <!-- تأخير التشغيل التلقائي - أزرار أفقية -->
+    <div class="settings-row vertical">
+      <span>تأخير التشغيل التلقائي</span>
+      <div class="option-group" data-setting="autoResumeDelay">
+        <button class="option-btn" data-value="0.5">0.5 ث</button>
+        <button class="option-btn" data-value="1">1 ث</button>
+        <button class="option-btn" data-value="2">2 ث</button>
+        <button class="option-btn" data-value="3">3 ث</button>
+      </div>
+    </div>
+
+    <!-- مسح السجل كل 7 أيام (Switch) -->
+    <div class="settings-row">
+      <span>مسح السجل كل 7 أيام</span>
+      <span class="switch" data-on="false" data-setting="autoClearHistory"><span class="switch-knob"></span></span>
+    </div>
+  
+
+  <p class="settings-group-title">العرض</p>
+  <div class="settings-card">
+    <!-- حجم الخط - أزرار أفقية -->
+    <div class="settings-row vertical">
+      <span>حجم الخط</span>
+      <div class="option-group" data-setting="fontSize">
+        <button class="option-btn" data-value="large">كبير</button>
+        <button class="option-btn" data-value="medium">متوسط</button>
+        <button class="option-btn" data-value="small">صغير</button>
+      </div>
+    </div>
+
+    <!-- اللغة - أزرار أفقية -->
+    <div class="settings-row vertical">
+      <span>اللغة</span>
+      <div class="option-group" data-setting="language">
+        <button class="option-btn" data-value="ar">عربي</button>
+        <button class="option-btn" data-value="en">إنجليزي</button>
+      </div>
+    </div>
+
+    <!-- مؤثرات الصوت البصرية (Switch) -->
+    <div class="settings-row">
+      <span>مؤثرات الصوت البصرية</span>
+      <span class="switch" data-on="true" data-setting="visualizer"><span class="switch-knob"></span></span>
+    </div>
+
+    <!-- أيقونة التسجيل (Switch) -->
+    <div class="settings-row">
+      <span>أيقونة التسجيل</span>
+      <span class="switch" data-on="true" data-setting="recordIcon"><span class="switch-knob"></span></span>
+    </div>
+  </div>
+</div>
+  <!-- iframe للبث عبر الويب -->
+  <iframe id="radioWebview" style="display:none; width:100%; height:0;"></iframe>
+
+</div>
+
+<script src="capacitorBridge.js"></script>
+<script src="stations_fallback.js"></script>
+<script src="hls.min.js"></script>
+<script src="globals.js"></script>
+<script src="i18n.js"></script>
+<script src="stationsData.js"></script>
+<script src="audioCore.js"></script>
+<script src="playerControls.js"></script>
+<script src="history.js"></script>
+<script src="favorites.js"></script>
+<script src="search.js"></script>
+<script src="uiRendering.js"></script>
+<script src="settings.js"></script>
+<script src="equalizer.js"></script>
+<script src="keyboardShortcuts.js"></script>
+<script src="compactMode.js"></script>
+<script src="menuBar.js"></script>
+<script src="mobileMediaSession.js"></script>
+<script src="backgroundAudio.js"></script>
+<script src="appInit.js"></script>
+
+<!--
+تطبيق X6 Radio
+أنشأه: سعيد بدر
+حقوق النشر © 2026 سعيد بدر
+هذا التطبيق مرخص بموجب رخصة MIT
+-->
+</body>
+</html>

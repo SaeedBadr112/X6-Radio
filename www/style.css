@@ -1,0 +1,2863 @@
+/* =========================================================
+   X6 Radio - Mobile UI (نسخة معدلة بالكامل)
+   نظام الألوان والمتغيرات العامة
+   ========================================================= */
+:root {
+  --bg-app: #0f2038;
+  --bg-card: #132844;
+  --bg-input: #0f2038;
+  --bg-elevated: #16345c;
+  --border: #23405f;
+  --accent: #3d9dff;
+  --text: #ffffff;
+  --text-dim: #8fa8c8;
+  --text-muted: #5c7ca0;
+  --danger: #e0506a;
+  --success: #3fb56a;
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --station-card-height: 56px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: "Segoe UI", "Tajawal", "Cairo", sans-serif;
+  background: var(--bg-app);
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, input, select {
+  font-family: inherit;
+}
+ul {
+  list-style: none;
+}
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+/* =========================================================
+   الإطار العام للتطبيق
+   ========================================================= */
+.phone {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.app-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 14px 14px 0;
+  overflow: hidden;
+}
+
+/* =========================================================
+   إخفاء شريط الحالة (Status Bar)
+   ========================================================= */
+.status-bar {
+  display: none !important;
+}
+
+/* =========================================================
+   الهيدر وشريط البحث
+   ========================================================= */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+.app-header h1 {
+  font-size: 17px;
+  font-weight: 600;
+}
+.icon-btn {
+  font-size: 20px;
+  color: var(--text-dim);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.app-logo {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #c8203a;
+}
+.app-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+.search-bar i {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.search-bar #searchInput {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+.search-bar #searchInput::placeholder {
+  color: var(--text-muted);
+}
+#clearSearchBtn {
+  cursor: pointer;
+}
+
+/* =========================================================
+   شاشات المحتوى (تبديل بينها بجافاسكريبت)
+   ========================================================= */
+.view {
+  display: none;
+  flex: 1;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+.view.active {
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================================================
+   بطاقة "قيد التشغيل الآن"
+   ========================================================= */
+.now-playing-card {
+ background: var(--bg-elevated);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+/* =========================================================
+   ارتفاع أيقونة المحطة و المؤشر الصوتى (صف واحد دائماً)
+   ========================================================= */
+.np-visual-row {
+  display: flex;
+  flex-wrap: nowrap;        /* منع الالتفاف إلى سطر جديد */
+  width: 100%;
+  height: 110px;
+}
+
+.np-artwork {
+  flex: 0 0 50%;            /* عرض ثابت 50%، لا ينمو ولا يتقلص */
+  max-width: 50%;
+  position: relative;
+  background: linear-gradient(135deg, #fff8e500, #fff8e500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;        /* منع خروج الأيقونة عن الحدود */
+  border: 1px solid #9f1631;
+  border-radius: 16px;
+}
+
+.np-artwork #stationIcon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#changeIconBtn {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #fff;
+}
+
+#npEqualizer {
+  flex: 0 0 50%;            /* عرض ثابت 50%، لا ينمو ولا يتقلص */
+  max-width: 50%;
+  min-width: 0;              /* يسمح بانكماش المحتوى إذا لزم الأمر */
+  background: #3d9dff1a;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  padding: 0px;
+  overflow: hidden;        /* منع خروج الأعمدة عن الحدود */
+  box-sizing: border-box;  /* مضمون بفضل القاعدة العامة، لكن للتأكيد */
+  border: 1px solid #9f1631;
+  border-radius: 16px;
+}
+
+#npEqualizer span {
+  width: 9px;
+  border-radius: 1px;
+  background: linear-gradient(to top, var(--accent), #ff5c5c);
+}
+#currentStationName {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  padding-top: 10px;
+}
+#currentStationCountry {
+  text-align: center;
+  font-size: 14px;
+  color: #81befb;
+  margin: 2px 0 10px;
+}
+
+.np-controls {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 12px;
+  direction: ltr;
+}
+.np-side {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.np-side-start {
+  justify-content: flex-end;
+}
+.np-side-end {
+  justify-content: flex-start;
+}
+
+.control-btn {
+  font-size: 28px;
+  color: var(--text-dim);
+  width: 40px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.85));
+  transition: filter 0.2s ease, transform 0.15s ease;
+}
+.control-btn:active {
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.50));
+  transform: scale(0.92);
+}
+.record-btn {
+  background: #3a1620;
+  border-radius: 50%;
+  color: var(--danger);
+  font-size: 14px;
+}
+#favHeart {
+  color: var(--danger);
+margin-right: -10px;
+}
+
+.fa-step-forward:before {
+    content: "\f051";
+margin-right: 0px;
+}
+
+#playPauseBtn {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: #1e4373;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #8fa8c8;
+  margin-left: 15px;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.85));
+  transition: filter 0.2s ease, transform 0.15s ease;
+}
+#playPauseBtn:active {
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.50));
+  transform: scale(0.9);
+}
+
+#currentPresetDisplay {
+  width: 60px !important;
+  height: 30px !important;
+  min-width: 60px !important;
+  max-width: 115px !important;
+  min-height: 30px !important;
+  max-height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 9px !important;      /* حجم خط مناسب للمساحة */
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important; /* إضافة "..." إذا زاد النص */
+  padding: 0 4px !important;
+  box-sizing: border-box !important;
+  border-radius: 16px;
+  text-align: center;
+  background-color: #000; /* خلفية سوداء */
+  border: 2px solid #2e2e2e; /* إطار رمادي معدني */
+  box-shadow: 0 0 15px #00ccff; /* توهج أزرق حول الشاشة */
+}
+#currentPresetDisplay::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.05) 0px,
+    rgba(255,255,255,0.05) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  pointer-events: none;
+}
+
+#timerUp {
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  color: #81befb;
+  padding: 8px 0 12px;
+  direction: ltr;
+}
+
+/* =========================================================
+   عنوان القائمة + مربع بحث الدول
+   ========================================================= */
+.list-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+  height: 40px;
+}
+
+.country-details {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+.country-details #selectedCountryName {
+  font-size: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-search {
+  width: 154px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  height: 40px;
+}
+.mini-search #countriesSearchInput {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 12px;
+  outline: none;
+  min-width: 0;
+}
+.mini-search #countriesSearchInput::placeholder {
+  color: var(--text-muted);
+}
+.mini-search i {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.mini-search.full {
+  width: 100%;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+.mini-search.full #historySearchInput {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 12px;
+  outline: none;
+}
+
+/* =========================================================
+   عمود الدول
+   ========================================================= */
+.split-row {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#countriesList {
+  width: 110px;              /* عرض كافٍ لعرض اسم الدولة بجوار العلم */
+  flex-shrink: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;     /* تمدد العناصر لملء العرض */
+  gap: 8px;
+  background: var(--bg-input) !important;
+  border-radius: var(--radius-sm);
+  padding: 4px 2px;
+  height: 97%;
+}
+
+
+.country-item {
+  width: 100%;              /* ملء العرض */
+  height: 35px;
+  border-radius: 6px;
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: row;      /* ترتيب أفقي: العلم ثم النص */
+  align-items: center;
+  padding: 0 6px;           /* هوامش داخلية */
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.country-item .country-flag-icon {
+  width: 36px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 3px;
+  flex-shrink: 0;           /* منع تصغير العلم */
+}
+.country-item .country-code {
+  font-size: 12px;
+ font-weight: bold;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.country-item .country-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* عرض اسم الدولة على جميع الشاشات */
+.country-item .country-name {
+  display: inline-block;
+}
+
+/* إخفاء كود الدولة (أصبح زائداً مع ظهور الاسم) */
+.country-item .country-code {
+  display: none;
+}
+
+.country-item.active {
+  border-color: var(--accent);
+  background: var(--bg-elevated);
+  box-shadow: 0 0 8px rgba(61, 157, 255, 0.3);
+}
+
+/* =========================================================
+   قائمة المحطات
+   ========================================================= */
+.station-list {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  padding-bottom: 4px;
+}
+.station-list.full-width {
+  width: 100%;
+}
+
+/* =========================================================
+   الشريط السفلي
+   ========================================================= */
+.bottom-nav {
+  display: flex !important;
+  flex-shrink: 0 !important;
+  justify-content: space-around;
+  align-items: center;
+  height: 60px !important;
+  min-height: 60px !important;
+  padding: 4px 0 !important;
+  border-top: 1px solid var(--border);
+  padding-bottom: calc(4px + env(safe-area-inset-bottom));
+  background: var(--bg-card);
+  width: 100%;
+  z-index: 10;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  font-size: 9px;
+  color: var(--text-dim);
+}
+.nav-item i {
+  font-size: 18px;
+}
+.nav-item.active {
+  color: var(--accent);
+}
+
+.nav-add {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  margin-top: -5px;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+}
+.nav-add i {
+  font-size: 18px;
+}
+
+/* ============================================================
+   القائمة الجانبية (Drawer) — تصميم محسّن
+   ============================================================ */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 20;
+}
+.drawer-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: min(82%, 320px);
+  background: var(--bg-card);
+  z-index: 21;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: -4px 0 30px rgba(0, 0, 0, 0.5);
+}
+.drawer.open {
+  transform: translateX(0);
+}
+
+/* ===== رأس القائمة ===== */
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 14px 14px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+.drawer-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.drawer-brand img {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+.drawer-brand span {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.drawer-header .icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-input);
+  font-size: 15px;
+  transition: background 0.2s;
+}
+.drawer-header .icon-btn:hover {
+  background: var(--bg-elevated);
+}
+
+/* ===== جسم القائمة ===== */
+.drawer-menu {
+  padding: 8px 0 4px;
+  flex: 1;
+}
+
+/* ===== المجموعات القابلة للطي ===== */
+.menu-group {
+  margin: 0 6px 2px;
+  border-radius: 10px;
+  transition: background 0.15s ease;
+}
+.menu-group.open {
+  background: rgba(61, 157, 255, 0.04);
+}
+
+.menu-group-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+  border-radius: 10px;
+  transition: all 0.15s ease;
+}
+.menu-group-header:hover {
+  background: var(--bg-elevated);
+}
+.menu-group-header i:first-child {
+  font-size: 18px;
+  width: 22px;
+  text-align: center;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+.menu-group.open .menu-group-header {
+  color: #fff;
+}
+.menu-group.open .menu-group-header i:first-child {
+  color: var(--accent);
+}
+
+.chevron {
+  font-size: 11px;
+  transition: transform 0.25s ease;
+  color: var(--text-muted);
+  margin-inline-start: auto;
+  flex-shrink: 0;
+}
+.menu-group.open .chevron {
+  transform: rotate(-90deg);
+  color: var(--accent);
+}
+
+/* جسم المجموعة (محتوى قابل للطي) */
+.menu-group-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  padding: 0 8px;
+}
+.menu-group.open .menu-group-body {
+  max-height: 600px;
+  padding: 2px 8px 8px;
+}
+
+/* ===== صفوف القائمة ===== */
+.menu-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  font-size: 12px;
+  color: var(--text-dim);
+  border-radius: 8px;
+  transition: all 0.15s ease;
+  min-height: 42px;
+}
+.menu-row:hover {
+  background: var(--bg-elevated);
+  color: #fff;
+}
+.menu-row i:first-child {
+  font-size: 17px;
+  color: var(--text-muted);
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+/* قيمة جانبية */
+.row-value {
+  margin-right: auto;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* ===== فواصل ===== */
+.menu-divider {
+  border-top: 1px solid var(--border);
+  margin: 2px 10px;
+}
+
+/* ===== فواصل بين الأقسام ===== */
+.drawer-section-sep {
+  display: block;
+  margin: 8px 14px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  opacity: 0.7;
+}
+
+/* ===== صف: ضاغط الصوت (Toggle) ===== */
+.toggle-row {
+  justify-content: flex-start;
+}
+.toggle-row > span:not(.switch):not(.switch-knob) {
+  flex: 1;
+}
+
+/* ===== صف: المظهر (Theme) — عمودي ===== */
+.theme-row {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 8px;
+  padding: 12px 14px !important;
+  margin: 4px 6px !important;
+  border-radius: 10px !important;
+  background: var(--bg-input) !important;
+}
+.theme-row > span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.theme-row > span i {
+  font-size: 17px;
+  color: var(--text-muted);
+  width: 22px;
+  text-align: center;
+}
+
+.chip-group {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.chip {
+  font-size: 11px;
+  padding: 5px 12px;
+  white-space: nowrap;
+  border-radius: 20px;
+  background: var(--bg-app);
+  border: 1.5px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+.chip.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(61, 157, 255, 0.3);
+}
+.chip:hover:not(.active) {
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ===== صف: الإعدادات (مستقل) ===== */
+#menuOpenSettings {
+  margin: 6px 6px 2px;
+  padding: 11px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.chevron-sm {
+  margin-right: auto;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ===== صفوف ستيريو وجهاز الإخراج ===== */
+.stereo-row {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+}
+.stereo-row > span {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.stereo-buttons {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-right: auto;
+}
+.stereo-btn {
+  background: var(--bg-app);
+  border: 1.5px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 8px;
+  padding: 3px 8px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+.stereo-btn.active {
+  border-color: var(--accent);
+  color: #fff;
+  background: var(--accent);
+  box-shadow: 0 2px 6px rgba(61, 157, 255, 0.25);
+}
+.stereo-btn:hover:not(.active) {
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.output-row {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+}
+.output-row > span {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.output-buttons {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-right: auto;
+}
+.output-btn {
+  background: var(--bg-app);
+  border: 1.5px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 8px;
+  padding: 3px 8px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.output-btn.active {
+  border-color: var(--accent);
+  color: #fff;
+  background: var(--accent);
+  box-shadow: 0 2px 6px rgba(61, 157, 255, 0.25);
+}
+.output-btn:hover:not(.active) {
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ===== زر الخروج ===== */
+.drawer-exit {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  margin: 6px 6px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--danger);
+  border-radius: 10px;
+  background: rgba(224, 80, 106, 0.06);
+  border: 1px solid rgba(224, 80, 106, 0.12);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.drawer-exit i {
+  font-size: 16px;
+  width: 22px;
+  text-align: center;
+}
+.drawer-exit:hover {
+  background: rgba(224, 80, 106, 0.12);
+  border-color: rgba(224, 80, 106, 0.25);
+}
+
+/* ===== تذييل القائمة ===== */
+.drawer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 0 8px;
+  font-size: 10px;
+  color: var(--text-muted);
+  opacity: 0.6;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  margin: 0 14px;
+}
+
+/* =========================================================
+   المفاتيح (Switch)
+   ========================================================= */
+.switch {
+  width: 28px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--border);
+  position: relative;
+  margin-inline-start: auto;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+.switch-knob {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  transition: right 0.2s ease, background 0.2s ease;
+}
+.switch[data-on="true"] {
+  background: var(--accent);
+}
+.switch[data-on="true"] .switch-knob {
+  right: calc(100% - 14px);
+  background: #fff;
+}
+
+/* =========================================================
+   الشاشات المنزلقة (Subscreens)
+   ========================================================= */
+.subscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-card);
+  z-index: 100;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.subscreen.open {
+  transform: translateX(0);
+}
+
+.subscreen-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 16px;
+  font-weight: 600;
+  flex-shrink: 0;
+  background: var(--bg-card);
+}
+.subscreen-header .icon-btn {
+  font-size: 20px;
+  color: var(--text-dim);
+}
+.subscreen-body {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  background: var(--bg-card);
+}
+
+/* =========================================================
+   إعدادات (settings) داخل subscreen
+   ========================================================= */
+.settings-card {
+  background: var(--bg-input);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 12px;
+  border-bottom: 1px solid #1c3352;
+  font-size: 12px;
+}
+.settings-row:last-child {
+  border-bottom: none;
+}
+.settings-row.vertical {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+.settings-row.vertical span {
+  margin-bottom: 2px;
+}
+.option-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.option-btn {
+  flex: 1;
+  min-width: 40px;
+  padding: 2px 4px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-input);
+  color: var(--text-dim);
+  font-size: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.option-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.option-btn:hover {
+  background: var(--bg-elevated);
+}
+
+/* =========================================================
+   نموذج إضافة محطة
+   ========================================================= */
+.form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.form-card label {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 10px;
+}
+.form-card input,
+.form-card select {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  color: var(--text);
+  font-size: 12px;
+  outline: none;
+}
+.form-card input:focus,
+.form-card select:focus {
+  border-color: var(--accent);
+}
+.form-card input::placeholder {
+  color: var(--text-muted);
+}
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+.btn-primary,
+.btn-secondary {
+  flex: 1;
+  padding: 11px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+.btn-secondary {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+/* =========================================================
+   السجل
+   ========================================================= */
+.history-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+#historyCount {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.history-actions {
+  display: flex;
+  gap: 6px;
+}
+.btn-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 10px;
+  padding: 6px 10px;
+  border-radius: 14px;
+}
+.btn-chip.danger {
+  color: var(--danger);
+  border-color: #4a2530;
+}
+
+/* =========================================================
+/* ============================================================
+   شاشة المعادل الصوتي (الكاملة)
+   ============================================================ */
+/* جعل شاشة المعادل مرجعاً للعناصر المطلقة */
+#audio-eq-tab {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+}
+
+/* ============================================================
+   1. الهيدر (عنوان "معادل الصوت" + زر الطاقة)
+   ============================================================ */
+#audio-eq-tab .eq-header {
+    position: absolute !important;
+    top: 10px !important;
+    left: 10px !important;
+    right: 10px !important;
+    height: 40px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    z-index: 20 !important;
+    padding: 0 !important;
+}
+
+#audio-eq-tab .eq-header .list-title {
+    font-size: 18px !important;
+    font-weight: bold !important;
+    color: #dc2626 !important;
+    margin: 0 !important;
+}
+
+#audio-eq-tab .eq-header #eqPowerBtn {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    background: #22c55e !important;
+    color: white !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 18px !important;
+    cursor: pointer !important;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.4) !important;
+    transition: all 0.3s ease !important;
+}
+
+#audio-eq-tab .eq-header #eqPowerBtn:hover {
+    background: #16a34a !important;
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.6) !important;
+    transform: scale(1.05);
+}
+
+#audio-eq-tab .eq-header #eqPowerBtn.active {
+    background: #22c55e !important;
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.8), 0 0 60px rgba(34, 197, 94, 0.4) !important;
+    animation: pulseGlow 1.5s infinite ease-in-out !important;
+}
+
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 10px rgba(34, 197, 94, 0.4), 0 0 20px rgba(34, 197, 94, 0.2); }
+    50% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.8), 0 0 50px rgba(34, 197, 94, 0.4); }
+    100% { box-shadow: 0 0 10px rgba(34, 197, 94, 0.4), 0 0 20px rgba(34, 197, 94, 0.2); }
+}
+
+/* ============================================================
+   2. الأشرطة (Sliders)
+   ============================================================ */
+#audio-eq-tab #eq-sliders {
+    position: absolute !important;
+    top: 60px !important;
+    left: 5px !important;
+    right: 5px !important;
+    height: 45% !important;
+    min-height: 160px !important;
+    max-height: 220px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: flex-end !important;
+    gap: 4px !important;
+    padding: 10px 5px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    z-index: 10 !important;
+    background: rgba(7, 21, 38, 0.3);
+    border-radius: 12px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    box-sizing: border-box !important;
+}
+
+#audio-eq-tab #eq-sliders .eq-slider-container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    flex-shrink: 0;
+    min-width: 28px;
+}
+
+#audio-eq-tab #eq-sliders .eq-frequency-label {
+    font-size: 9px;
+    color: #f78585;
+    margin-bottom: 4px;
+}
+
+#audio-eq-tab #eq-sliders .eq-slider {
+    -webkit-appearance: slider-vertical !important;
+    appearance: slider-vertical !important;
+    width: 22px !important;
+    height: 130px !important;
+    margin: 0 !important;
+    accent-color: #dc2626;
+    cursor: pointer;
+
+}
+
+#audio-eq-tab #eq-sliders .eq-value-label {
+    font-size: 9px;
+    color: #f78585;
+    margin-top: 4px;
+}
+
+/* ============================================================
+   3. أزرار الأوضاع الصوتية (Presets)
+   ============================================================ */
+#audio-eq-tab #eqPresetButtons {
+    position: absolute !important;
+    top: 46% !important;
+    left: 10px !important;
+    right: 10px !important;
+    height: auto !important;
+    max-height: 33% !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 10px !important;
+    z-index: 15 !important;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+}
+
+#audio-eq-tab #eqPresetButtons .eq-preset-btn {
+    padding: 5px 12px !important;
+    font-size: 19px !important;
+    border-radius: 40px !important;
+    border: 2px solid #4b5563 !important;
+    background: transparent !important;
+    color: #b8e1fc !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    flex-shrink: 0 !important;
+}
+
+#audio-eq-tab #eqPresetButtons .eq-preset-btn:hover {
+    background: rgba(59, 130, 246, 0.2) !important;
+    border-color: #60a5fa !important;
+}
+
+#audio-eq-tab #eqPresetButtons .eq-preset-btn.active {
+    background: #ff5c5c !important;
+    border-color: #db5151 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px rgb(235 70 37 / 40%) !important;
+}
+
+/* ============================================================
+   4. أزرار الإجراءات (حفظ مخصص + إعادة ضبط)
+   ============================================================ */
+#audio-eq-tab .eq-actions {
+    position: absolute !important;
+    bottom: 34px !important;
+    left: 10px !important;
+    right: 10px !important;
+    height: 40px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 16px !important;
+    z-index: 20 !important;
+    padding: 0 !important;
+}
+
+#audio-eq-tab .eq-actions #eqResetBtn,
+#audio-eq-tab .eq-actions #eqSaveCustomBtn {
+    flex: 1 !important;
+    max-width: 160px !important;
+    height: 36px !important;
+    font-size: 12px !important;
+    padding: 0 16px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    border-radius: 40px !important;
+    box-sizing: border-box !important;
+    cursor: pointer !important;
+    border: none !important;
+}
+
+#audio-eq-tab .eq-actions #eqResetBtn {
+    background: #dc2626 !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+#audio-eq-tab .eq-actions #eqResetBtn:hover {
+    background: #b91c1c !important;
+    transform: translateY(-2px);
+}
+
+#audio-eq-tab .eq-actions #eqSaveCustomBtn {
+    background: #f59e0b !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+#audio-eq-tab .eq-actions #eqSaveCustomBtn:hover {
+    background: #d97706 !important;
+    transform: translateY(-2px);
+}
+
+#audio-eq-tab .eq-actions #eqSaveCustomBtn.saved {
+    background: #22c55e !important;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.6) !important;
+}
+ 
+/* =========================================================
+   أزرار ستيريو وجهاز الإخراج في القائمة الجانبية
+   ========================================================= */
+.stereo-row {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+}
+.stereo-row i {
+  margin-right: 4px;
+}
+.stereo-row span {
+  flex: 1;
+  font-size: 12px;
+}
+.stereo-buttons {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.stereo-btn {
+  background: var(--bg-input);
+  border: 2px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 8px;
+  padding: 2px 6px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.stereo-btn.active {
+  border-color: var(--accent);
+  color: #fff;
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(61, 157, 255, 0.3);
+}
+.stereo-btn:hover {
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.output-row {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 6px;
+}
+.output-row i {
+  margin-left: 8px;
+}
+.output-row span {
+  flex: 1;
+  font-size: 12px;
+}
+.output-buttons {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 140px;
+}
+.output-btn {
+  flex: 1;
+  background: var(--bg-input);
+  border: 2px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 8px;
+  padding: 2px 4px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  min-width: 60px;
+}
+.output-btn.active {
+  border-color: var(--accent);
+  color: #fff;
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(61, 157, 255, 0.3);
+}
+.output-btn:hover {
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* =========================================================
+   أيقونة التسجيل
+   ========================================================= */
+.record-btn {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.record-icon-outer {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  background: #ff1744;
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.3s ease;
+}
+.record-icon-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 15px;
+  height: 15px;
+  background: white;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+.record-btn.recording .record-icon-outer {
+  animation: pulse-record 1.2s infinite ease-in-out;
+}
+@keyframes pulse-record {
+  0% { box-shadow: 0 0 2px #ff1744, 0 0 6px #ff1744; }
+  50% { box-shadow: 0 0 12px #ff1744, 0 0 24px #ff1744; }
+  100% { box-shadow: 0 0 2px #ff1744, 0 0 6px #ff1744; }
+}
+.np-side-start {
+  position: relative;
+}
+.record-timer {
+  position: absolute;
+  top: 44px;
+  right: 71px;
+  background: rgba(255, 23, 68, 0.9);
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 0 4px;
+  border-radius: 8px;
+  display: none;
+  pointer-events: none;
+  min-width: 28px;
+  text-align: center;
+  line-height: 16px;
+  z-index: 10;
+}
+.record-timer.timer-visible {
+  display: block;
+}
+
+/* =========================================================
+   حاوية الوضع الصوتي والأزرار
+   ========================================================= */
+.preset-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 20px;
+  flex-shrink: 0;
+  color: #81befb; 
+  font-family: 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif;
+  font-size: 11px;
+ font-weight: 700; /* أقصى سمك */
+  text-shadow: 
+    0 0 8px #aed5ff,
+    0 0 1px #81befb,
+    0 0 1px #81befb; /* تكرار الظل لإعطاء كثافة إضافية */
+  z-index: 1; /* فوق تأثير الخطوط */
+}
+.preset-arrows {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex-shrink: 0;
+}
+.preset-arrow {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 8px;
+  padding: 0;
+  width: 20px;
+  height: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+.preset-arrow i {
+  font-size: 8px;
+  pointer-events: none;
+}
+.preset-arrow:hover {
+  background: var(--bg-elevated);
+  color: var(--accent);
+}
+.preset-arrow:active {
+  transform: scale(0.85);
+  color: var(--accent);
+}
+
+/* =========================================================
+   إخفاء عناصر سطح المكتب في الجوال
+   ========================================================= */
+.menu-bar,
+.main-header,
+.countries-panel,
+.content-panel .tabs-container,
+.content-panel .tab-content .tab-pane:not(.active-pane),
+.custom-title-bar,
+#playerStatus {
+  display: none !important;
+}
+
+.player-bar,
+#audioVisualizerWrapper {
+  display: none !important;
+}
+@media (min-width: 321px) {
+#currentPresetDisplay {
+  width: 85px !important;
+  height: 36px !important;
+  min-width: 77.7px !important;
+  max-width: 115px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 11px !important;      /* حجم خط مناسب للمساحة */
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important; /* إضافة "..." إذا زاد النص */
+  padding: 0 4px !important;
+  box-sizing: border-box !important;
+  border-radius: 16px;
+  text-align: center;
+  background-color: #000; /* خلفية سوداء */
+  border: 2px solid #55759f; /* إطار رمادي معدني */
+  box-shadow: 0 0 15px #46cdff; /* توهج أزرق حول الشاشة */
+}
+#currentPresetDisplay::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.05) 0px,
+    rgba(255,255,255,0.05) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  pointer-events: none;
+}
+}
+/* =========================================================
+   تصحيح الشريط السفلي في الوضع الرأسي
+   ========================================================= */
+@media (min-width: 321px) and (max-width: 500px) {
+  .phone,
+  .app-card {
+    height: 100vh;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  .bottom-nav {
+    display: flex !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+/* =========================================================
+   الوضع الأفقي (Landscape) - الحل النهائي
+   ========================================================= */
+@media (min-width: 501px) {
+
+  /* 1. السماح بالتمرير العمودي */
+  html, body, .phone, .app-card {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+    min-height: 100vh !important;
+  }
+
+  /* 2. إعادة تطبيق إخفاء الشاشات غير النشطة */
+  .view {
+    display: none !important;
+  }
+
+  .view.active {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* 3. شاشة المعادل عند تفعيلها */
+  #audio-eq-tab.active {
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+    height: 100% !important;
+    min-height: 100vh !important;
+    overflow: hidden !important;
+    padding: 8px 16px !important;
+    background: transparent !important;
+  }
+
+  /* 4. إصلاح القوائم */
+  .split-row {
+    display: flex !important;
+    gap: 8px !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+
+  /* قائمة الدول - كما هي */
+  #countriesList {
+    width: 120px !important;
+    flex-shrink: 0 !important;
+    height: auto !important;
+    max-height: 400px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 6px 2px !important;
+    background: var(--bg-input) !important;
+    border-radius: var(--radius-sm);
+    min-height: 0 !important;
+    flex: 0 0 auto !important;
+  }
+ /* ===== قائمة المحطات (مثل قائمة الدول) ===== */
+  .station-list {
+    flex: 0 1 auto !important;    /* لا تتمدد، تنكمش إذا لزم الأمر */
+    height: auto !important;
+    max-height: 400px !important; /* نفس حد قائمة الدول */
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    padding-bottom: 4px !important;
+    min-height: 0 !important;
+    width: 100% !important;       /* تأخذ العرض الكامل المتاح */
+  }
+
+.country-item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  padding: 0 6px !important;
+  gap: 4px !important;
+}
+
+  .country-item .country-flag-icon {
+    width: 24px !important;
+    height: 18px !important;
+    object-fit: contain;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .country-item.active {
+    border-color: var(--accent);
+    background: var(--bg-elevated);
+    box-shadow: 0 0 8px rgba(61, 157, 255, 0.3);
+  }
+
+  /* 5. إصلاح الشريط السفلي */
+  .bottom-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    display: flex !important;
+    flex-shrink: 0 !important;
+    height: 55px !important;
+    min-height: 55px !important;
+    background: var(--bg-card) !important;
+    border-top: 1px solid var(--border) !important;
+    z-index: 99999 !important;
+    justify-content: space-around !important;
+    align-items: center !important;
+    padding: 4px 0 !important;
+    width: 100% !important;
+    pointer-events: auto !important;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .bottom-nav .nav-item {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    z-index: 100000 !important;
+    user-select: none !important;
+  }
+
+  .bottom-nav .nav-item i,
+  .bottom-nav .nav-item span {
+    pointer-events: none !important;
+  }
+
+  /* 6. باقي التعديلات التجميلية (بدون تغيير) */
+/* =========================================================
+   الوضع الأفقي (Landscape) - تعديل أيقونة المحطة والمؤشر
+   ========================================================= */
+  /* ===== أيقونة المحطة والمؤشر الصوتي (صف واحد، 30% - 70%) ===== */
+  .np-visual-row {
+    display: flex !important;
+    flex-wrap: nowrap !important;  /* منع الالتفاف إلى سطر جديد */
+    width: 100% !important;
+    height: 130px !important;      /* نفس ارتفاع الوضع الرأسي */
+  }
+
+  .np-artwork {
+    flex: 0 0 30% !important;      /* عرض ثابت 30%، لا يتقلص ولا يتمدد */
+    max-width: 30% !important;
+    min-width: 0 !important;
+    position: relative;
+    background: linear-gradient(135deg, #7a1e4e, #3a1450);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden !important;   /* منع خروج الأيقونة */
+  }
+
+  .np-artwork #stationIcon {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  #changeIconBtn {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #fff;
+  }
+
+  #npEqualizer {
+    flex: 0 0 70% !important;      /* عرض ثابت 70%، لا يتقلص ولا يتمدد */
+    max-width: 70% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    padding: 10px !important;
+    overflow: hidden !important;   /* منع خروج الأعمدة */
+    box-sizing: border-box !important;
+  }
+
+  #npEqualizer span {
+    width: 9px;
+    border-radius: 1px;
+    background: linear-gradient(to top, var(--accent), #ff5c5c);
+  }
+
+  #currentStationName {
+    font-size: 16px !important;
+    padding-top: 6px !important;
+  }
+  #currentStationCountry {
+    font-size: 12px !important;
+    margin: 0 0 6px !important;
+  }
+  .np-controls {
+    padding: 0 8px !important;
+  }
+  #playPauseBtn {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 14px !important;
+    margin: 0 6px !important;
+  }
+  #timerUp {
+    font-size: 12px !important;
+    padding: 4px 0 8px !important;
+  }
+
+  .app-header {
+    margin-bottom: 8px !important;
+  }
+  .app-header h1 {
+    font-size: 15px !important;
+  }
+  .search-bar {
+    padding: 6px 10px !important;
+    margin-bottom: 8px !important;
+  }
+  .search-bar #searchInput {
+    font-size: 12px !important;
+  }
+  .mini-search {
+    width: 120px !important;
+    height: 34px !important;
+    padding: 4px 6px !important;
+  }
+  .mini-search #countriesSearchInput {
+    font-size: 11px !important;
+  }
+
+  .drawer {
+    width: min(60%, 260px) !important;
+  }
+  .menu-row {
+    padding: 6px 4px !important;
+    font-size: 10px !important;
+  }
+  .menu-group-header {
+    padding: 8px 4px !important;
+    font-size: 11px !important;
+  }
+  .chip {
+    font-size: 8px !important;
+    padding: 2px 6px !important;
+  }
+
+  .subscreen-header {
+    padding: 10px 14px !important;
+  }
+  .subscreen-body {
+    padding: 12px !important;
+  }
+
+  /* شاشة المعادل الداخلية */
+  #audio-eq-tab .eq-header {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    height: 36px !important;
+    margin-bottom: 6px !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    z-index: 20 !important;
+    padding: 0 !important;
+  }
+
+  #audio-eq-tab .eq-header .list-title {
+    font-size: 16px !important;
+    margin: 0 !important;
+  }
+
+  #audio-eq-tab .eq-header #eqPowerBtn {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 16px !important;
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.3) !important;
+  }
+
+  #audio-eq-tab #eq-sliders {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    height: 46% !important;
+    min-height: 100px !important;
+    max-height: 180px !important;
+    padding: 6px 8px !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: flex-end !important;
+    gap: 3px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    background: rgba(7, 21, 38, 0.25);
+    border-radius: 10px;
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    box-sizing: border-box !important;
+  }
+
+  #audio-eq-tab #eq-sliders .eq-slider-container {
+    min-width: 24px !important;
+    flex-shrink: 0 !important;
+  }
+
+  #audio-eq-tab #eq-sliders .eq-frequency-label {
+    font-size: 8px !important;
+    margin-bottom: 2px !important;
+  }
+
+  #audio-eq-tab #eq-sliders .eq-slider {
+    height: 100px !important;
+    width: 18px !important;
+  }
+
+  #audio-eq-tab #eq-sliders .eq-value-label {
+    font-size: 8px !important;
+    margin-top: 2px !important;
+  }
+
+  #audio-eq-tab #eqPresetButtons {
+    position: relative !important;
+    top: auto !important;
+    left: -95px !important;
+    right: auto !important;
+    max-height: 50px !important;
+    min-height: 36px !important;
+    padding: 4px 6px !important;
+    gap: 4px !important;
+    flex-shrink: 0 !important;
+    overflow-y: hidden !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    background: transparent !important;
+    border: none !important;
+    margin: 4px 0 !important;
+  }
+
+  #audio-eq-tab #eqPresetButtons .eq-preset-btn {
+    font-size: 14px !important;
+    padding: 3px 10px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    border-width: 1px !important;
+  }
+
+  #audio-eq-tab .eq-actions {
+    position: relative !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    height: 34px !important;
+    gap: 12px !important;
+    flex-shrink: 0 !important;
+    margin-top: 4px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  #audio-eq-tab .eq-actions #eqResetBtn,
+  #audio-eq-tab .eq-actions #eqSaveCustomBtn {
+    max-width: 140px !important;
+    height: 30px !important;
+    font-size: 10px !important;
+    padding: 0 12px !important;
+    flex: 1 !important;
+  }
+
+  /* ===== إضافة مساحة أسفل المحتوى للشريط السفلي ===== */
+  .app-card {
+    padding-bottom: 35px !important;
+  }
+
+  .view.active {
+    padding-bottom: 35px !important;
+  }
+
+  .subscreen-body {
+    padding-bottom: 35px !important;
+  }
+}
+/* =========================================================
+ /* =========================================================
+   التنسيق الأساسي لبطاقة المحطة (يعمل في كل الأحجام)
+   ========================================================= */
+.station-card {
+  display: flex !important;
+  flex-direction: row !important;
+  direction: ltr !important;
+  align-items: center !important;
+  padding: 0 8px !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  max-height: 56px !important;
+  background: var(--bg-input) !important;
+  border-radius: var(--radius-sm) !important;
+  overflow: hidden !important;
+  gap: 0 !important;
+  direction: ltr !important;
+  width: 100% !important;
+  margin-bottom: 4px !important;
+border: 1px solid var(--border);
+}
+
+.station-card-left {
+  flex-shrink: 0 !important;
+  width: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-right: 6px !important;
+}
+
+.station-card-left .play-station-btn {
+  background: none !important;
+  border: none !important;
+  padding: 2px 0 !important;
+  width: 100% !important;
+  height: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 1px !important;
+  cursor: pointer !important;
+  color: #81befb !important;
+}
+
+.station-card-left .play-station-btn i {
+  font-size: 18px !important;
+  line-height: 1 !important;
+}
+
+.station-card-left .play-station-btn span {
+  display: block !important;
+  font-size: 8px !important;
+  line-height: 1 !important;
+  color: var(--text-dim) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: center !important;
+}
+
+/* ===== نبض زر التشغيل النشط ===== */
+@keyframes stationPulse {
+    0%   { transform: scale(1);   opacity: 1; }
+    50%  { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(1);   opacity: 1; }
+}
+
+.station-card-left .play-station-btn.playing {
+  color: #e74c3c !important;
+}
+.station-card-left .play-station-btn.playing i {
+  animation: stationPulse 1.2s ease-in-out infinite;
+  display: inline-block;
+}
+.station-card-left .play-station-btn.playing span {
+  color: #e74c3c !important;
+}
+
+.station-card-info {
+  flex: 1 !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.station-card-info .station-name {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  color: var(--text) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  width: 100% !important;
+  direction: ltr !important;
+  text-align: left !important;
+  margin-left: 4px;
+}
+
+.station-name .station-mic-icon {
+  flex-shrink: 0 !important;
+  font-size: 22px !important;
+  color: #0dc150 !important;
+  display: inline-block !important;
+  order: 0 !important;
+}
+
+.station-card-right {
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0px !important;
+  width: auto !important;
+  padding-left: 4px;
+}
+
+.station-card-right .delete-station-btn {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  width: 28px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 18px !important;
+  cursor: pointer !important;
+  color: #f1ca55 !important;
+  opacity: 0.8 !important;
+  order: 0 !important;
+}
+.station-card-right .delete-station-btn:hover {
+  opacity: 1 !important;
+}
+.station-card-right .fav-star {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  width: 28px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 18px !important;
+  cursor: pointer !important;
+  color: #ff1744 !important;
+  order: 1 !important;
+}
+.station-card-right .fav-star i {
+  font-size: 18px !important;
+}
+
+/* =========================================================
+   تمييز المحطات الخارجية (API Stations)
+   ========================================================= */
+.station-card.api-station {
+    border-left: 3px solid #9c27b0 !important;
+    background: linear-gradient(90deg, rgba(156, 39, 176, 0.08), var(--bg-input) 20%) !important;
+}
+
+/* الوضع الإنجليزي — الإطار من اليمين */
+html[dir="ltr"] .station-card.api-station {
+    border-left: none !important;
+    border-right: 3px solid #9c27b0 !important;
+    background: linear-gradient(270deg, rgba(156, 39, 176, 0.08), var(--bg-input) 20%) !important;
+}
+
+/* أيقونة الميكروفون للمحطات الخارجية — بنفسجي موحد في جميع الثيمات */
+.station-mic-icon.api-mic,
+.default-theme .station-name .station-mic-icon.api-mic {
+    color: #bb21d5 !important;
+}
+.dark-high-contrast .station-name .station-mic-icon.api-mic {
+    color: #bb21d5 !important;
+}
+.light-theme .station-name .station-mic-icon.api-mic {
+    color: #bb21d5 !important;
+}
+.red-theme .station-name .station-mic-icon.api-mic {
+    color: #bb21d5 !important;
+}
+
+/* ========== إخفاء العناصر غير المرغوب فيها ========== */
+.station-card .station-actions,
+.station-card .station-info,
+.station-card .repair-station-btn {
+  display: none !important;
+}
+.station-card .fav-star,
+.station-card .delete-station-btn {
+  display: flex !important;
+}
+
+/* =========================================================
+   تعديلات للشاشات الأكبر (501px فأكثر) - فقط الأحجام والمسافات
+   ========================================================= */
+@media (min-width: 501px) {
+  .station-card {
+    padding: 0 clamp(8px, 1.2vw, 18px) !important;
+    height: clamp(52px, 8vh, 68px) !important;
+    min-height: 52px !important;
+    max-height: 72px !important;
+    gap: clamp(6px, 1vw, 14px) !important;
+    margin-bottom: clamp(4px, 0.6vw, 8px) !important;
+  }
+  .station-card-left {
+    width: clamp(40px, 5.5vw, 54px) !important;
+    margin-right: clamp(4px, 0.5vw, 10px) !important;
+  }
+  .station-card-left .play-station-btn i {
+    font-size: clamp(18px, 2.4vw, 26px) !important;
+  }
+  .station-card-left .play-station-btn span {
+    font-size: clamp(8px, 1vw, 11px) !important;
+  }
+  .station-card-info .station-name {
+    font-size: clamp(14px, 1.8vw, 22px) !important;
+    gap: clamp(5px, 0.8vw, 10px) !important;
+  }
+  .station-name .station-mic-icon {
+    font-size: clamp(14px, 1.8vw, 22px) !important;
+  }
+  .station-card-right {
+    gap: clamp(6px, 0.8vw, 12px) !important;
+    padding-left: clamp(4px, 0.5vw, 8px) !important;
+  }
+  .station-card-right .delete-station-btn,
+  .station-card-right .fav-star {
+    width: clamp(30px, 3.8vw, 44px) !important;
+    height: clamp(30px, 3.8vw, 44px) !important;
+    font-size: clamp(18px, 2.2vw, 24px) !important;
+  }
+  .station-card-right .fav-star i {
+    font-size: inherit !important;
+  }
+}
+
+/* =========================================================
+   عرض العناصر داخل .country-item
+   ========================================================= */
+.country-item .country-code {
+  display: none; /* كود الدولة مخفي — يظهر الاسم فقط */
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-left: 4px;
+}
+
+.country-item .country-name {
+  display: inline-block; /* الاسم ظاهر على جميع الشاشات */
+}
+
+@media (min-width: 501px) {
+  .country-item .country-name {
+  display: inline-block !important;
+  font-size: 14px;
+ font-weight: bold;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+  .country-item .country-code {
+    display: none !important;
+  }
+ #countriesList,
+  .station-list {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: 900px !important; 
+  }
+}
+/* --------------------------------------------المظهر----------------------------------------------------- */
+/* ==================================================================== */
+/* ============================================================
+   المظاهر - الترتيب: افتراضي، داكن، فاتح، أحمر
+   ============================================================ */
+
+/* 1. الوضع الافتراضي (يُتجاهل أحياناً لكن لا مشكلة) */
+body.default-theme {
+  /* يمكنك تركها فارغة أو إضافة خصائص افتراضية إذا أردت */
+}
+
+/* 2. المظهر الداكن */
+body.dark-high-contrast {
+  --bg-app: #2d0a0a !important;
+  --bg-card: #000000 !important;
+  --bg-input: #070e0e !important;
+  --bg-elevated: #172a2b !important;
+  --border: #173e41 !important;
+  --text: #e0ecfb !important;
+  --text-dim: #c0d8f1 !important;
+  --text-muted: #42595b !important;
+  --accent: #339ba1 !important;
+  --danger: #ff1744 !important;
+  --success: #2d959b !important;
+}
+
+/* 3. المظهر الفاتح */
+body.light-theme {
+  --bg-app: #f1f3f5 !important;
+  --bg-card: #f5f9ff !important;
+  --bg-input: #e9ecef !important;
+  --bg-elevated: #c0c9d2 !important;
+  --border: #ced4da !important;
+  --text: #212529 !important;
+  --text-dim: #0051fd !important;
+  --text-muted: #6c757d !important;
+  --accent: #ff500b !important;
+  --danger: #dc3545 !important;
+  --success: #28a745 !important;
+}
+
+/* 4. المظهر الأحمر */
+body.red-theme {
+ --bg-app: #2d0a0a !important;
+  --bg-card: #4a1818 !important;
+  --bg-input: #5c2020 !important;
+  --bg-elevated: #6e2a2a !important;
+  --border: #8b3c3c !important;
+  --text: #fef7e8 !important;
+  --text-dim: #d4b8b8 !important;
+  --text-muted: #a07070 !important;
+  --accent: #ff6b6b !important;
+  --danger: #ff3b3b !important;
+  --success: #6bff6b !important;
+}
+/* ===== الوضع الداكن ===== */
+.dark-high-contrast .station-card-left .play-station-btn {
+    color: #21f3ff !important;
+}
+.dark-high-contrast .station-card-left .play-station-btn:hover {
+    color: #86efac !important;
+}
+.dark-high-contrast .station-card-left .play-station-btn.playing {
+    color: #21f3ff !important;
+}
+
+/* ===== الوضع الفاتح ===== */
+.light-theme .station-card-left .play-station-btn {
+    color: #0052ff !important;
+}
+.light-theme .station-card-left .play-station-btn:hover {
+    color: #1d4ed8 !important;
+}
+.light-theme .station-card-left .play-station-btn.playing {
+    color: #dc2626 !important;
+}
+
+/* ===== الوضع الأحمر ===== */
+.red-theme .station-card-left .play-station-btn {
+    color: #4acd81 !important;
+}
+.red-theme .station-card-left .play-station-btn:hover {
+    color: #166534 !important;
+}
+.red-theme .station-card-left .play-station-btn.playing {
+    color: #4acd81 !important;
+}
+/* ==================================================================== */
+/* --------------------------------------------------الوضع الداكن------------------------------------------ */
+.dark-high-contrast #playPauseBtn {
+  
+}
+
+.dark-high-contrast #playPauseBtn {
+  background: #c0d8f1 !important; 
+  color: #309095 !important;
+}
+
+.dark-high-contrast .station-name .station-mic-icon {
+  color: #ef9673 !important;
+}
+
+.dark-high-contrast .station-card-right .delete-station-btn {
+  color: #ffe200 !important;
+}
+
+.dark-high-contrast #timerUp {
+  color: #21f3ff;
+}
+
+.dark-high-contrast .preset-wrapper {
+  color: #2cf4ff; 
+  text-shadow: 0 0 8px rgb(53 245 255);
+}
+
+.dark-high-contrast #currentPresetDisplay {
+  background-color: #000; /* خلفية سوداء */
+  border: 2px solid #017c83; /* إطار رمادي معدني */
+  box-shadow: 0 0 15px #21f3ff; /* توهج أزرق حول الشاشة */
+}
+
+.dark-high-contrast #currentStationCountry {
+    color: #21f3ff;
+}
+
+.dark-high-contrast #audio-eq-tab #eqPresetButtons .eq-preset-btn.active {
+    background: #21f3ff !important;
+    border-color: #28a2a9 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px #21f3ff6b !important;
+}
+
+.dark-high-contrast #audio-eq-tab .eq-header .list-title {
+    color: #21f3ff !important;
+}
+
+.dark-high-contrast #audio-eq-tab #eq-sliders .eq-slider {
+    accent-color: #21f3ff;
+}
+
+.dark-high-contrast #audio-eq-tab #eq-sliders .eq-frequency-label {
+    color: #21f3ff;
+}
+
+.dark-high-contrast #audio-eq-tab #eq-sliders .eq-value-label {
+    color: #21f3ff;
+}
+
+.dark-high-contrast .control-btn {
+    color: #21f3ff;
+}
+/* ==================================================================== */
+/* ----------------------------------------------الوضع الفاتح------------------------------------------- */
+.light-theme #playPauseBtn {
+  
+}
+
+.light-theme #playPauseBtn {
+  background: #9cb4cd !important; 
+  color: #0051fd !important;
+}
+
+.light-theme .station-name .station-mic-icon {
+  color: #ef9673 !important;
+}
+
+.light-theme .station-card-right .delete-station-btn {
+  color: #168740 !important;
+}
+
+.light-theme #timerUp {
+  color: #0052ff !important;
+}
+
+.light-theme .preset-wrapper {
+  color: #05070a !important; 
+  text-shadow: 0 0 8px #4e7bb5 !important;
+}
+
+.light-theme #currentPresetDisplay {
+  background-color: #b9dcff; /* خلفية سوداء */
+  border: 2px solid #92c2f3; /* إطار رمادي معدني */
+  box-shadow: 0 0 15px #4b6e91; /* توهج أزرق حول الشاشة */
+}
+
+.light-theme #currentStationCountry {
+    color: #0051fd;
+}
+
+.light-theme #audio-eq-tab #eqPresetButtons .eq-preset-btn.active {
+    background: #3d9dff !important;
+    border-color: #93c5fd !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px rgba(61, 157, 255, 0.3) !important;
+}
+
+.light-theme #audio-eq-tab .eq-header .list-title {
+    color: #3d9dff !important;
+}
+
+.light-theme #audio-eq-tab #eq-sliders .eq-slider {
+    accent-color: #3d9dff;
+}
+
+.light-theme #audio-eq-tab #eq-sliders .eq-frequency-label {
+    color: #3d9dff;
+}
+
+.light-theme #audio-eq-tab #eq-sliders .eq-value-label {
+    color: #3d9dff;
+}
+
+.light-theme #audio-eq-tab #eqPresetButtons .eq-preset-btn {
+color: #3d9dff !important;
+}
+/* ==================================================================== */
+/* ----------------------------------------------الوضع الأحمر------------------------------------------- */
+.red-theme #playPauseBtn {
+  
+}
+
+.red-theme #playPauseBtn {
+  background: #a34949 !important; 
+  color: #22bd64 !important;
+}
+
+.red-theme .station-name .station-mic-icon {
+  color: #f16a35 !important;
+}
+
+.red-theme .station-card-right .delete-station-btn {
+  color: #81befb !important;
+}
+
+.red-theme #timerUp {
+  color: #22bd64;
+}
+
+.red-theme .preset-wrapper {
+  color: #00ff5e; 
+  text-shadow: 0 0 8px rgb(0 253 93);
+}
+
+.red-theme #currentPresetDisplay {
+  background-color: #471b1b; /* خلفية سوداء */
+  border: 2px solid #5f9975; /* إطار رمادي معدني */
+  box-shadow: 0 0 15px #05bb48; /* توهج أزرق حول الشاشة */
+}
+
+.red-theme #currentStationCountry {
+    color: #22bd64;
+}
+
+.red-theme #audio-eq-tab #eqPresetButtons .eq-preset-btn.active {
+    background: #22bd64 !important;
+    border-color: #52bd80 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px #22bd6470 !important;
+}
+
+.red-theme #audio-eq-tab .eq-header .list-title {
+    color: #22bd64 !important;
+}
+
+.red-theme #audio-eq-tab #eq-sliders .eq-slider {
+    accent-color: #22bd64;
+}
+
+.red-theme #audio-eq-tab #eq-sliders .eq-frequency-label {
+    color: #26e176;
+}
+
+.red-theme #audio-eq-tab #eq-sliders .eq-value-label {
+    color: #26e176;
+}
+/* ================================================================ */
+/* ===== تلميحة الميكروفون - إصلاح نهائي ===== */
+.mic-tooltip {
+    position: fixed !important;
+    background: #1a2a4a !important;
+    color: #ffffff !important;
+    padding: 8px 16px !important;
+    border-radius: 12px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    border: 2px solid #3d9dff !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7) !important;
+    z-index: 999999 !important;
+    pointer-events: none !important;
+    white-space: nowrap !important;
+    opacity: 0 !important;
+    transform: translateY(6px) scale(0.95) !important;
+    transition: opacity 0.25s ease, transform 0.25s ease !important;
+    max-width: 90vw !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-family: 'Segoe UI', 'Tajawal', 'Cairo', sans-serif !important;
+    line-height: 1.4 !important;
+}
+.mic-tooltip.visible {
+    opacity: 1 !important;
+    transform: translateY(0) scale(1) !important;
+}
+
+/* ===== ألوان التلميحة حسب الثيم ===== */
+/* الافتراضي (أزرق) — نفس الألوان الأساسية */
+body.default-theme .mic-tooltip,
+body:not(.default-theme):not(.dark-high-contrast):not(.light-theme):not(.red-theme) .mic-tooltip {
+    background: #1a2a4a !important;
+    color: #ffffff !important;
+    border-color: #3d9dff !important;
+}
+
+/* الداكن (سماوي) */
+body.dark-high-contrast .mic-tooltip {
+    background: #0a1a1a !important;
+    color: #e0f7fa !important;
+    border-color: #339ba1 !important;
+}
+
+/* الفاتح (برتقالي) */
+body.light-theme .mic-tooltip {
+    background: #fff8f0 !important;
+    color: #333333 !important;
+    border-color: #ff500b !important;
+}
+
+/* الأحمر (أخضر) */
+body.red-theme .mic-tooltip {
+    background: #1a0a0a !important;
+    color: #d4f8d4 !important;
+    border-color: #22bd64 !important;
+}
+body.red-theme  .control-btn {
+    color: #22bd64;
+}
+/* ============================================================
+   الوضع الإنجليزي (LTR) — القائمة الجانبية تفتح من اليسار
+   ============================================================ */
+html[dir="ltr"] .drawer {
+    right: auto !important;
+    left: 0 !important;
+    transform: translateX(-100%) !important;
+    box-shadow: 8px 0 20px rgba(0, 0, 0, 0.4) !important;
+}
+html[dir="ltr"] .drawer.open {
+    transform: translateX(0) !important;
+}
+
+/* أيقونات الأسهم (chevron) في القائمة الجانبية — قلب الاتجاه */
+html[dir="ltr"] .menu-group-header .chevron {
+    transform: rotate(180deg) !important;
+}
+html[dir="ltr"] .menu-group.open .menu-group-header .chevron {
+    transform: rotate(90deg) !important;
+}
+
+/* أيقونة الرجوع في شاشة الإعدادات الفرعية */
+html[dir="ltr"] .subscreen-header .icon-btn i.fa-chevron-right {
+    transform: rotate(180deg) !important;
+    display: inline-block !important;
+}
+
+/* أيقونة الرجوع من المعادل */
+html[dir="ltr"] #btnBackFromEq i.fa-chevron-right {
+    transform: rotate(180deg) !important;
+    display: inline-block !important;
+}
+/* ============================================================
+   شاشة البداية (Splash Screen)
+   ============================================================ */
+#splashScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 99999;
+    background: #0f2038;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+#splashScreen img {
+    width: 96px;
+    height: 96px;
+    border-radius: 22px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    animation: splashPulse 1.6s ease-in-out infinite;
+}
+.splash-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #e0f2fe;
+    letter-spacing: 0.5px;
+}
+#splashScreen.hide {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+@keyframes splashPulse {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.06); }
+    100% { transform: scale(1); }
+}
+
+/* ============================================================
+   انتقالات سلسة عند تغيير الثيم (تمنع الوميض المفاجئ)
+   ============================================================ */
+body,
+.phone,
+.app-card,
+.view,
+.now-playing-card,
+.station-card,
+.country-item,
+.drawer,
+.subscreen,
+.search-bar,
+.mini-search,
+.bottom-nav,
+.app-header,
+.settings-card,
+.menu-group-body {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+==========================================================================================================================
+/*-------------------------تنسيق التلميح أسفل المحطات-----------------------------*/
+/* ===== جملة التلميح أسفل قائمة المحطات ===== */
+.search-hint-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px;
+    margin-top: 10px;
+    background: rgba(61, 157, 255, 0.08);
+    border: 1px dashed rgba(61, 157, 255, 0.4);
+    border-radius: 12px;
+    color: var(--text-dim);
+    font-size: 13px;
+    text-align: center;
+}
+
+.search-hint-box i {
+    font-size: 18px;
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+/* تنسيقات إضافية حسب المظهر */
+.dark-high-contrast .search-hint-box {
+    background: rgba(51, 155, 161, 0.1);
+    border-color: rgba(51, 155, 161, 0.5);
+}
+
+.light-theme .search-hint-box {
+    background: rgba(255, 80, 11, 0.08);
+    border-color: rgba(255, 80, 11, 0.4);
+}
+
+.red-theme .search-hint-box {
+    background: rgba(34, 189, 100, 0.1);
+    border-color: rgba(34, 189, 100, 0.5);
+}
