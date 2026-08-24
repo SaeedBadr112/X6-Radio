@@ -1,0 +1,848 @@
+// ========== طلب اختيار اللغة عند أول تشغيل (نافذة زرين) ==========
+(async function firstRunLanguageSelection() {
+    if (window.electronAPI && window.electronAPI.getConfigLanguage) {
+        try {
+            let lang = await window.electronAPI.getConfigLanguage();
+            if (!lang || (lang !== 'ar' && lang !== 'en')) {
+                // إنشاء نافذة منبثقة مخصصة
+                const overlay = document.createElement('div');
+                overlay.style.position = 'fixed';
+                overlay.style.top = '0';
+                overlay.style.left = '0';
+                overlay.style.width = '100%';
+                overlay.style.height = '100%';
+                overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                overlay.style.zIndex = '999999';
+                overlay.style.display = 'flex';
+                overlay.style.alignItems = 'center';
+                overlay.style.justifyContent = 'center';
+                
+                const dialog = document.createElement('div');
+                dialog.style.backgroundColor = '#0a2a44';
+                dialog.style.borderRadius = '20px';
+                dialog.style.padding = '30px';
+                dialog.style.minWidth = '300px';
+                dialog.style.textAlign = 'center';
+                dialog.style.boxShadow = '0 8px 25px rgba(0,0,0,0.5)';
+                dialog.style.border = '1px solid #2563eb';
+                
+                dialog.innerHTML = `
+                    <h2 style="color: #60a5fa; margin-bottom: 20px;">🌍 Choose Language</h2>
+                    <div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 10px;">
+                        <button id="langArBtn" style="background: #2563eb; border: none; color: white; padding: 12px 30px; border-radius: 40px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s;">العربية</button>
+                        <button id="langEnBtn" style="background: #4b5563; border: none; color: white; padding: 12px 30px; border-radius: 40px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s;">English</button>
+                    </div>
+                    <p style="color: #9ec8f0; font-size: 14px; margin-top: 15px;">اختر اللغة / Select Language</p>
+                `;
+                
+                overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+                
+                const langArBtn = dialog.querySelector('#langArBtn');
+                const langEnBtn = dialog.querySelector('#langEnBtn');
+                
+                const selectLanguage = (selectedLang) => {
+                    overlay.remove();
+                    window.electronAPI.saveConfigLanguage(selectedLang);
+                    localStorage.setItem('setting_language', selectedLang);
+                    window.location.reload();
+                };
+                
+                langArBtn.addEventListener('click', () => selectLanguage('ar'));
+                langEnBtn.addEventListener('click', () => selectLanguage('en'));
+                
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        // لا نفعل شيئاً، المستخدم يجب أن يختار لغة
+                    }
+                });
+                
+                return;
+            }
+            localStorage.setItem('setting_language', lang);
+        } catch (err) {
+            console.warn('فشل في قراءة/كتابة config.json', err);
+        }
+    } else {
+        console.log('electronAPI غير متاح، سيتم استخدام اللغة المخزنة أو العربية');
+    }
+})();
+
+// ========== قراءة اللغة من config.json (عبر IPC) ==========
+(async function initLanguageFromConfig() {
+    if (window.electronAPI && window.electronAPI.getConfigLanguage) {
+        try {
+            const lang = await window.electronAPI.getConfigLanguage();
+            if (lang === 'ar' || lang === 'en') {
+                localStorage.setItem('setting_language', lang);
+                console.log('✅ تم تحميل اللغة من config.json:', lang);
+            } else if (lang) {
+                console.warn('⚠️ لغة غير صالحة في config.json، تجاهل');
+            }
+        } catch (err) {
+            console.warn('⚠️ فشل قراءة config.json، سيتم استخدام اللغة المخزنة أو العربية', err);
+        }
+    } else {
+        console.log('ℹ️ electronAPI غير متاح، سيتم استخدام اللغة من localStorage أو العربية');
+    }
+})();
+
+// ========== باقي الكود ==========
+document.addEventListener('DOMContentLoaded', async () => {
+    // شاشة البداية
+    const splash = document.getElementById('splashScreen');
+    if (splash) {
+        setTimeout(() => {
+            splash.classList.add('hide');
+            setTimeout(() => {
+                if (splash && splash.parentNode) splash.remove();
+            }, 1500);
+        }, 3000);
+    }
+    
+    // تحميل البيانات الأساسية
+    await loadMasterStations();
+    loadFailedIconsSet();
+    
+    // ========== تطبيق اللغة مع ضبط الاتجاه تلقائياً ==========
+    const savedLanguage = localStorage.getItem('setting_language') || 'en';
+    currentLanguage = savedLanguage;
+    document.documentElement.lang = currentLanguage === 'ar' ? 'ar' : 'en';
+    if (currentLanguage === 'ar') {
+        document.documentElement.setAttribute('dir', 'rtl');
+        document.body.style.direction = 'rtl';
+        document.body.style.textAlign = 'right';
+    } else {
+        document.documentElement.setAttribute('dir', 'ltr');
+        document.body.style.direction = 'ltr';
+        document.body.style.textAlign = 'left';
+    }
+    
+    // تحديث النصوص ديناميكياً
+    updateAllTexts();
+    
+    // إعداد عنصر الحالة
+    let statusEl = document.getElementById('playerStatus');
+    if (!statusEl) {
+        statusEl = document.createElement('div');
+        statusEl.id = 'playerStatus';
+        statusEl.className = 'player-status';
+        const searchWrapper = document.querySelector('.search-wrapper');
+        if (searchWrapper && searchWrapper.parentNode) searchWrapper.insertAdjacentElement('afterend', statusEl);
+        else document.querySelector('.main-header').appendChild(statusEl);
+    }
+    
+    // ========== إضافة محطة جديدة ==========
+    const submitAddStationBtn = document.getElementById('submitAddStation');
+    if (submitAddStationBtn) {
+        submitAddStationBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (typeof window.addNewStationFromForm === 'function') {
+                window.addNewStationFromForm();
+            } else {
+                console.error('addNewStationFromForm function not found');
+                setStatus(t('add_button') + ' ' + (currentLanguage === 'ar' ? 'غير متوفر' : 'not available'), true);
+            }
+        });
+    }
+
+    const cancelAddStationBtn = document.getElementById('cancelAddStation');
+    if (cancelAddStationBtn) {
+        cancelAddStationBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (typeof window.resetAddStationForm === 'function') {
+                window.resetAddStationForm();
+            }
+        });
+    }
+
+    // ✅ تعبئة قائمة الدول في نموذج الإضافة
+    if (typeof window.populateCountrySelect === 'function') {
+        window.populateCountrySelect();
+    } else {
+        console.warn('populateCountrySelect function not found');
+    }
+
+    // ربط الأزرار الأساسية
+    const playPauseBtn = document.getElementById("playPauseBtn");
+    if (playPauseBtn) {
+        playPauseBtn.addEventListener("click", () => {
+            if (!audioPlayer.paused && currentStation) {
+                stopPlayback();
+            } else {
+                if (currentStation && currentStation.url) {
+                    playStation(currentStation.url, currentStation.name, currentStation.country, currentStation.id, currentStation.isWebPage || false);
+                } else {
+                    setStatus(t('no_station_selected'), true);
+                }
+            }
+        });
+    }
+    
+    // تهيئة زر "المحطة التالية"
+    if (typeof initNextStationButton === 'function') {
+        initNextStationButton();
+    }
+    
+    const volumeSlider = document.getElementById("volumeSlider");
+    if (volumeSlider) {
+        const savedVolume = parseFloat(localStorage.getItem('x6RadioVolume'));
+        audioPlayer.volume = !isNaN(savedVolume) ? savedVolume : 0.8;
+        volumeSlider.value = audioPlayer.volume;
+        volumeSlider.addEventListener("input", (e) => { const v = parseFloat(e.target.value); audioPlayer.volume = v; localStorage.setItem('x6RadioVolume', v); });
+    }
+
+    // ربط النقر على القلب لتبديل المفضلة
+document.getElementById('favHeart')?.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (currentStation && currentStation.id) {
+        toggleFavorite(currentStation.id);
+        updateFavButtonCurrent(); // تحديث القلب والنص
+        // تحديث باقي الواجهة
+        if (typeof renderStations === 'function') renderStations();
+        if (typeof renderFavoritesTab === 'function') renderFavoritesTab();
+    }
+});
+        
+    const searchInputEl = document.getElementById("searchInput");
+    if (searchInputEl) {
+        searchInputEl.addEventListener("input", (e) => { 
+            const val = e.target.value; 
+            searchKeyword = val; 
+            const searchQueryLabel = document.getElementById("searchQueryLabel");
+            if (searchQueryLabel) searchQueryLabel.innerText = searchKeyword || "---"; 
+            if (searchDebounceTimer) clearTimeout(searchDebounceTimer); 
+            searchDebounceTimer = setTimeout(() => { 
+                performSearch(searchKeyword); 
+                if (searchKeyword.trim() !== "") switchTab('search-tab'); 
+                else if(currentTab === 'search-tab') switchTab('stations-tab'); 
+            }, 300); 
+        });
+    }
+    
+    // أحداث التبويبات
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => { const target = btn.dataset.tab; if (target) switchTab(target); }));
+    const favoritesNavBtn = document.getElementById("favoritesNavBtn");
+    if (favoritesNavBtn) favoritesNavBtn.addEventListener("click", () => switchTab('favorites-tab'));
+    const stationsNavBtn = document.getElementById("stationsNavBtn");
+    if (stationsNavBtn) stationsNavBtn.addEventListener("click", () => switchTab('stations-tab'));
+    
+    // النقر على البطاقات
+    const containers = ['stationsContainer', 'favoritesContainer', 'searchResultsContainer'];
+    containers.forEach(containerId => {
+        const container = document.getElementById(containerId);
+        if (container) container.addEventListener('click', (e) => { const card = e.target.closest('.station-card'); if (!card) return; if (e.target.closest('.play-station-btn') || e.target.closest('.fav-star')) return; updateCurrentStationFromCard(card); });
+    });
+    
+    // بدء العرض
+    renderCountriesList();
+    renderStations();
+    restoreLastStationWithoutPlaying();
+    initMenuBar();
+    // تهيئة القوائم بالنقر
+if (typeof initClickMenus === 'function') {
+    initClickMenus();
+}
+    initHistoryEvents();
+    // تطبيق الثيم المحفوظ مع تأخير بسيط لضمان جاهزية electronAPI
+setTimeout(() => {
+    applyTheme(currentTheme);
+}, 50);
+    applyAllAdvancedSettings();
+    updateSettingCheckmarks();
+    bindSettingsMenuEvents();
+    bindRecordButton();
+
+// تهيئة معادل الصوت المتقدم
+if (typeof initEqualizer === 'function') {
+    initEqualizer();
+}
+        // استعادة وضع الصوت المخزن
+    if (typeof restoreAudioPreset === 'function') {
+        restoreAudioPreset();
+    }
+
+    if (window.electronAPI) {
+        window.electronAPI.onUpdateAvailable(() => {
+            setStatus(currentLanguage === 'ar' ? '📢 يتوفر تحديث جديد! جاري التحميل...' : '📢 New update available! Downloading...', false);
+        });
+        
+        window.electronAPI.onUpdateDownloaded(() => {
+            const userConfirmed = confirm(currentLanguage === 'ar' 
+                ? 'تم تحميل التحديث. هل تريد تثبيته الآن؟ (سيتم إعادة تشغيل التطبيق)'
+                : 'Update downloaded. Restart now to install?');
+            if (userConfirmed && window.electronAPI.quitAndInstall) {
+                window.electronAPI.quitAndInstall();
+            }
+        });
+        
+        window.electronAPI.onUpdateNotAvailable(() => {
+            setStatus(currentLanguage === 'ar' ? '✅ لا توجد تحديثات متاحة. أنت تستخدم أحدث إصدار.' : '✅ No updates available. You are using the latest version.', false);
+        });
+        
+        window.electronAPI.onUpdateError(() => {
+            setStatus(currentLanguage === 'ar' ? '❌ فشل البحث عن تحديثات. تأكد من اتصالك بالإنترنت.' : '❌ Failed to check for updates. Check your internet connection.', true);
+        });
+    }
+
+    // ربط زر تغيير أيقونة المحطة (ثلاث النقاط)
+    const changeIconBtn = document.getElementById('changeIconBtn');
+    if (changeIconBtn) {
+        changeIconBtn.addEventListener('click', () => {
+            if (currentStation && currentStation.id) {
+                if (typeof changeStationIcon === 'function') {
+                    changeStationIcon(currentStation.id);
+                } else {
+                    console.warn('changeStationIcon function not defined');
+                }
+            } else {
+                setStatus(t('no_station_selected'), true);
+            }
+        });
+    }
+    
+    setTimeout(() => {
+        bindTimerSubmenu();
+        bindStereoSubmenu();
+        bindOutputSubmenu();
+        bindThemeSubmenu();
+    }, 500);
+    
+    // إصلاح تخطيط شريط التشغيل
+    function fixPlayerBarOnceAndForAll() {
+        if (document.body.classList.contains('compact-mode')) return;
+        const isElectron = !!(window.electronAPI && window.electronAPI.closeApp);
+        const bottomValue = isElectron ? '400px' : '380px';
+        const styleId = 'player-bar-fix';
+        if (!document.getElementById(styleId)) {
+            const style = document.createElement('style');
+            style.id = styleId;
+            style.textContent = `
+                .player-bar {
+                    position: fixed !important;
+                    bottom: ${bottomValue} !important;
+                    left: 10px !important;
+                    right: 10px !important;
+                    z-index: 800 !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        const player = document.querySelector('.player-bar');
+        if (player) {
+            player.style.setProperty('position', 'fixed', 'important');
+            player.style.setProperty('bottom', bottomValue, 'important');
+            player.style.setProperty('left', '10px', 'important');
+            player.style.setProperty('right', '10px', 'important');
+            player.style.setProperty('z-index', '1100', 'important');
+        }
+        console.log(`✅ fixPlayerBarOnceAndForAll: bottom = ${bottomValue} (Electron: ${isElectron})`);
+    }
+
+    fixPlayerBarOnceAndForAll();
+    let fixInterval = setInterval(fixPlayerBarOnceAndForAll, 200);
+    setTimeout(() => clearInterval(fixInterval), 3000);
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 900) fixPlayerBarOnceAndForAll();
+    });
+    
+    function fixTabScrolling() {
+        const contentPanel = document.querySelector('.content-panel');
+        const tabsContainer = document.querySelector('.tabs-container');
+        const tabContent = document.querySelector('.tab-content');
+        if (contentPanel && tabsContainer && tabContent) {
+            contentPanel.style.display = 'flex';
+            contentPanel.style.flexDirection = 'column';
+            contentPanel.style.overflow = 'hidden';
+            tabsContainer.style.flexShrink = '0';
+            tabContent.style.flexGrow = '1';
+            tabContent.style.overflowY = 'auto';
+        }
+    }
+    setTimeout(fixTabScrolling, 100);
+    setTimeout(fixTabScrolling, 500);
+
+// ===== التحكم بشريط العنوان المخصص =====
+const minimizeBtn = document.getElementById('minimizeBtn');
+const maximizeBtn = document.getElementById('maximizeBtn');
+const closeBtn = document.getElementById('closeBtn');
+
+if (minimizeBtn && window.electronAPI) {
+  minimizeBtn.addEventListener('click', () => {
+    console.log('Minimize button clicked');
+    window.electronAPI.minimizeWindow();
+  });
+} else {
+  console.warn('Minimize button or electronAPI not found');
+}
+
+if (maximizeBtn && window.electronAPI) {
+  maximizeBtn.addEventListener('click', () => {
+    console.log('Maximize button clicked');
+    window.electronAPI.maximizeWindow();
+    // تحديث الأيقونة بعد تغيير الحالة
+    setTimeout(() => {
+      const isMax = window.electronAPI.isWindowMaximized();
+      maximizeBtn.textContent = isMax ? '☐' : '☐';
+    }, 100);
+  });
+  // تعيين الأيقونة الأولية
+  setTimeout(() => {
+    const isMax = window.electronAPI.isWindowMaximized();
+    maximizeBtn.textContent = isMax ? '☐' : '☐';
+  }, 500);
+} else {
+  console.warn('Maximize button or electronAPI not found');
+}
+
+if (closeBtn && window.electronAPI) {
+  closeBtn.addEventListener('click', () => {
+    console.log('Close button clicked');
+    window.electronAPI.closeWindow();
+  });
+} else {
+  console.warn('Close button or electronAPI not found');
+}
+    
+// ========== مؤشر صوتي جديد (15 عمود - نمط كاسيت سامسونج) ==========
+(function initStandaloneVisualizer() {
+    console.log("🎵 بدء مؤشر الصوت الجديد (15 عامود - نمط كاسيت سامسونج)");
+const BAR_GAP = 1; // المسافة بين الأعمدة (بكسل)
+
+    const canvas = document.getElementById('audioVisualizerCanvas');
+    if (!canvas) {
+        console.error("❌ Canvas غير موجود");
+        return;
+    }
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+        console.error("❌ لا يمكن الحصول على سياق الرسم");
+        return;
+    }
+
+    // ------------------- إعدادات الألوان والثوابت -------------------
+ // ========== قاعدة اختيار ألوان المؤشر حسب الثيم ==========
+function getThemeColors() {
+    const body = document.body;
+    let blue, orange, red;
+
+    // 1. الوضع الافتراضي (default)
+    if (!body.classList.contains('light-theme') &&
+        !body.classList.contains('dark-high-contrast') &&
+        !body.classList.contains('red-theme')) {
+        blue = '#33aaff';   // أزرق متوسط (كما طلبت)
+        orange = '#cc0000'; // برتقالي ذهبي (كما طلبت)
+        red = '#cc0000';    // أحمر غامق (كما طلبت)
+    }
+    // 2. الوضع الفاتح (Light)
+    else if (body.classList.contains('light-theme')) {
+        blue = '#33aaff';   // أزرق غامق
+        orange = '#cc0000'; // برتقالي داكن
+        red = '#cc0000';    // أحمر غامق
+    }
+    // 3. الوضع الداكن عالي التباين (Dark High Contrast)
+    else if (body.classList.contains('dark-high-contrast')) {
+        blue = '#33aaff';   // أزرق نيوني ساطع
+        orange = '#cc0000'; // أصفر/برتقالي نيوني ساطع
+        red = '#cc0000';    // أحمر نيوني قوي
+    }
+    // 4. الوضع الأحمر (Red)
+    else if (body.classList.contains('red-theme')) {
+        blue = '#33aaff';   // أزرق ملكي
+        orange = '#cc0000'; // برتقالي بني
+        red = '#cc0000';    // أحمر قرميدي غامق
+    }
+
+    return { neonBlue: blue, neonOrange: orange, neonRed: red };
+}
+
+// تطبيق الألوان
+const colors = getThemeColors();
+const neonBlue = colors.neonBlue;
+const neonOrange = colors.neonOrange;
+const neonRed = colors.neonRed;
+
+    const NUM_BARS = 15;
+    const GRAVITY = 2.4;
+    const PEAK_GRAVITY = 0.7;
+    const HOLD_TIME_FRAMES = 35;
+
+    let currentHeights = new Float32Array(NUM_BARS);
+    let peakHeights = new Float32Array(NUM_BARS);
+    let peakHoldTimers = new Int32Array(NUM_BARS);
+
+    let isActive = false;
+    let animationId = null;
+    let isContextReady = false;
+
+    // ------------------- توزيع الترددات (لوغاريتمي لـ 22 عمود) -------------------
+const binsPerBar = [
+    1, 3, 5, 8, 12, 17, 24, 33, 45, 60, 80, 105, 135, 170, 200
+];
+    // ------------------- دالة تغيير الحجم -------------------
+    function resizeCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        let width = Math.max(rect.width, 300);
+        let height = Math.max(rect.height, 80);
+        canvas.width = width;
+        canvas.height = height;
+        console.log(`📐 حجم Canvas: ${canvas.width}x${canvas.height}`);
+        // إعادة تعيين الارتفاعات
+        currentHeights.fill(0);
+        peakHeights.fill(0);
+        peakHoldTimers.fill(0);
+    }
+
+    // ------------------- رسم أعمدة فارغة (عند التوقف) -------------------
+    function drawEmptyBars() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const barWidth = (canvas.width / NUM_BARS) - BAR_GAP;
+        ctx.fillStyle = 'rgba(51, 170, 255, 0.08)';
+        for (let i = 0; i < NUM_BARS; i++) {
+            const x = (i * (barWidth + BAR_GAP)) + 2;
+            ctx.fillRect(x, canvas.height - 0, barWidth, 5);
+        }
+    }
+function drawBars() {
+    if (!isActive || !isContextReady || !window.analyserNode) {
+        drawEmptyBars();
+        animationId = requestAnimationFrame(drawBars);
+        return;
+    }
+
+    const bufferLength = window.analyserNode.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    window.analyserNode.getByteFrequencyData(dataArray);
+
+    // حساب الارتفاعات المستهدفة
+    const targetHeights = new Float32Array(NUM_BARS);
+    const maxHeight = canvas.height; // أقصى ارتفاع = ارتفاع الكنفاس بالكامل
+
+    for (let i = 0; i < NUM_BARS; i++) {
+        let sum = 0;
+        let count = 0;
+        const start = binsPerBar[i];
+        const end = (i < NUM_BARS - 1) ? binsPerBar[i + 1] - 1 : bufferLength - 1;
+
+        for (let bin = start; bin <= end && bin < bufferLength; bin++) {
+            sum += dataArray[bin];
+            count++;
+        }
+        let avg = count > 0 ? sum / count : 0;
+
+// الأعمدة 4، 5، 6 (ترددات منخفضة-متوسطة) – تعزيز معتدل
+if (i >= 4 && i <= 6) avg *= 1.1;
+// الأعمدة 7، 8، 9 (ترددات متوسطة-عالية) – تعزيز أقوى
+if (i >= 7 && i <= 9) avg *= 1.2;
+        // تعزيز الترددات المتوسطة العالية (الأعمدة 10 إلى 12)
+if (i > 9) avg *= 1.25;
+// تعزيز قوي جداً للترددات العالية جداً (الأعمدة 13 و 14)
+if (i > 12) avg *= 1.3;
+// تعزيز إضافي خاص بالعامود الأخير (i = 14) لجعله ينبض بقوة
+if (i === NUM_BARS - 1) avg *= 2.3;
+
+        targetHeights[i] = (Math.min(avg, 255) / 255) * maxHeight;
+        if (targetHeights[i] < 0) targetHeights[i] = 0;
+    }
+
+    // تحديث الارتفاعات ونقاط القمة
+    for (let i = 0; i < NUM_BARS; i++) {
+        if (targetHeights[i] > currentHeights[i]) {
+            currentHeights[i] = targetHeights[i];
+        } else {
+            currentHeights[i] -= GRAVITY;
+            if (currentHeights[i] < 0) currentHeights[i] = 0;
+        }
+
+        if (currentHeights[i] >= peakHeights[i]) {
+            peakHeights[i] = currentHeights[i];
+            peakHoldTimers[i] = HOLD_TIME_FRAMES;
+        } else {
+            if (peakHoldTimers[i] > 0) {
+                peakHoldTimers[i]--;
+            } else {
+                peakHeights[i] -= PEAK_GRAVITY;
+                if (peakHeights[i] < 0) peakHeights[i] = 0;
+            }
+        }
+    }
+
+    // ------------------- الرسم على Canvas -------------------
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (isActive) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+        ctx.lineWidth = 1;
+        for (let y = 0; y < canvas.height; y += 10) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
+        }
+    }
+
+    const barWidth = (canvas.width / NUM_BARS) - BAR_GAP;
+    const segmentHeight = 2;
+    const segmentGap = 1;
+
+    // ★★★ النسب المئوية الثابتة من الأسفل ★★★
+    const BLUE_PERCENT = 0.80;    // 60% أزرق
+    const ORANGE_PERCENT = 0.10;  // 30% برتقالي
+    const RED_PERCENT = 0.10;     // 10% أحمر
+
+    // ★★★ حساب الارتفاعات الفعلية بالبكسل بناءً على maxHeight ★★★
+    const blueHeight = maxHeight * BLUE_PERCENT;
+    const orangeHeight = maxHeight * ORANGE_PERCENT;
+    // الأحمر يأخذ الباقي تلقائياً (maxHeight - blueHeight - orangeHeight)
+
+    for (let i = 0; i < NUM_BARS; i++) {
+        const x = (i * (barWidth + BAR_GAP)) + 2;
+        const barHeight = currentHeights[i];
+        const totalSegments = Math.floor(barHeight / (segmentHeight + segmentGap));
+
+        for (let j = 0; j < totalSegments; j++) {
+            const y = canvas.height - 0 - (j * (segmentHeight + segmentGap));
+            const pixelFromBottom = j * (segmentHeight + segmentGap);
+
+            // ★★★ تحديد اللون بناءً على الارتفاع الفعلي ★★★
+            let color;
+            if (pixelFromBottom < blueHeight) {
+                color = neonBlue;      // 0 - 60%: أزرق
+            } else if (pixelFromBottom < blueHeight + orangeHeight) {
+                color = neonOrange;    // 60% - 90%: برتقالي
+            } else {
+                color = neonRed;       // 90% - 100%: أحمر
+            }
+
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, barWidth, segmentHeight);
+        }
+
+        // النقطة الطائرة (Peak)
+        if (peakHeights[i] > 0) {
+            const peakY = canvas.height - 0 - (Math.floor(peakHeights[i] / (segmentHeight + segmentGap)) * (segmentHeight + segmentGap));
+            const peakPixel = Math.floor(peakHeights[i] / (segmentHeight + segmentGap)) * (segmentHeight + segmentGap);
+            
+            let peakColor;
+            if (peakPixel < blueHeight) peakColor = neonBlue;
+            else if (peakPixel < blueHeight + orangeHeight) peakColor = neonOrange;
+            else peakColor = neonRed;
+            
+            ctx.fillStyle = peakColor;
+            ctx.fillRect(x, peakY, barWidth, segmentHeight);
+        }
+    }
+
+    animationId = requestAnimationFrame(drawBars);
+}
+    // ------------------- تهيئة الحجم وبدء الحلقة -------------------
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    if (window.ResizeObserver) {
+        const resizeObserver = new ResizeObserver(() => resizeCanvas());
+        resizeObserver.observe(canvas.parentElement);
+    }
+
+    drawBars();
+
+    // ------------------- ربط أحداث التشغيل والإيقاف -------------------
+    if (window.audioPlayer) {
+        window.audioPlayer.addEventListener('play', () => {
+            console.log("🎵 تشغيل الصوت، تنشيط المؤشر");
+            isActive = true;
+            if (window.audioCtx && window.audioCtx.state === 'suspended') {
+                window.audioCtx.resume().then(() => console.log("✅ AudioContext resumed"));
+            }
+            if (window.analyserNode) {
+                isContextReady = true;
+            }
+        });
+
+        window.audioPlayer.addEventListener('pause', () => {
+            console.log("⏸️ إيقاف مؤقت، إيقاف المؤشر");
+            isActive = false;
+        });
+
+        window.audioPlayer.addEventListener('ended', () => {
+            console.log("⏹️ انتهى التشغيل، إيقاف المؤشر");
+            isActive = false;
+        });
+    }
+
+    // محاولة تهيئة السياق
+    if (window.analyserNode && window.audioCtx) {
+        isContextReady = true;
+        console.log("✅ analyserNode و audioCtx جاهزان");
+    } else {
+        const checkInterval = setInterval(() => {
+            if (window.analyserNode && window.audioCtx) {
+                isContextReady = true;
+                clearInterval(checkInterval);
+                console.log("✅ analyserNode جاهز بعد الانتظار");
+            }
+        }, 500);
+        setTimeout(() => clearInterval(checkInterval), 10000);
+    }
+
+    console.log("✅ مؤشر الصوت الجديد (15 عامود) جاهز");
+})();
+});
+
+// ========== دوال التحديث (HTML) ==========
+function updateCurrentStationNameAndCountry() {
+    const nameEl = document.getElementById("currentStationName");
+    const countryWrapper = document.getElementById("currentStationCountry");
+    if (!nameEl || !countryWrapper) return;
+    
+    if (currentStation && currentStation.name) {
+        nameEl.innerText = currentStation.name;
+        let countryDisplay = currentStation.country || '';
+        if (currentStation.countryCode) {
+            const countryObj = allCountries.find(c => c.code === currentStation.countryCode);
+            if (countryObj) {
+                countryDisplay = currentLanguage === 'en' ? countryObj.name : countryObj.nameAr;
+            }
+        }
+        // عرض أيقونة الدبوس + اسم الدولة
+        countryWrapper.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${countryDisplay}`;
+    } else {
+        nameEl.innerText = t('current_station_default');
+        countryWrapper.innerHTML = '';
+    }
+}
+
+// تعديل الدوال التي كانت تستخدم canvas لاستدعاء دالة HTML بدلاً من ذلك
+function updateCurrentStationCountry() {
+    updateCurrentStationNameAndCountry();
+}
+
+// تعديل restoreLastStationWithoutPlaying لاستخدام HTML بدلاً من canvas
+function restoreLastStationWithoutPlaying() {
+    // ===== استعادة آخر محطة تم تشغيلها =====
+    const saved = localStorage.getItem('x6RadioCurrentStation');
+    if (saved) {
+        try {
+            const savedStation = JSON.parse(saved);
+            const stillExists = masterStations.some(st => st.id === savedStation.id);
+            if (stillExists && savedStation.url) {
+                currentStation = savedStation;
+                if (!currentStation.countryCode && currentStation.id) {
+                    const stationObj = masterStations.find(s => s.id === currentStation.id);
+                    if (stationObj && stationObj.countryCode) {
+                        currentStation.countryCode = stationObj.countryCode;
+                        localStorage.setItem('x6RadioCurrentStation', JSON.stringify(currentStation));
+                    }
+                }
+                updateCurrentStationNameAndCountry();
+                updateFavButtonCurrent();
+                if (currentStation.id) updateStationIcon(currentStation.id);
+                const playPauseBtn = document.getElementById("playPauseBtn");
+                if (playPauseBtn) playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                updateStationPlayButtons(null, false);
+                setStatus('', false);
+                if (autoResume) {
+                    setTimeout(() => {
+                        playStation(currentStation.url, currentStation.name, currentStation.country, currentStation.id, currentStation.isWebPage || false);
+                        setStatus(`${currentLanguage === 'ar' ? '🔄 تشغيل تلقائي' : '🔄 Auto-resume'}: ${currentStation.name}`, false);
+                    }, advancedSettings.autoResumeDelay * 1000);
+                }
+                // 🔥 لا نعيد تعيين currentFilterItem هنا، نتركه كما هو
+                return;
+            }
+        } catch(e) {}
+    }
+
+    // ===== استعادة آخر دولة مختارة من localStorage =====
+    const savedCountry = localStorage.getItem('x6RadioLastCountry');
+    if (savedCountry) {
+        const found = allCountries.find(c => c.code === savedCountry);
+        if (found) {
+            currentFilterItem = found;
+            renderCountriesList();
+            updateHeaderForFilter(currentFilterItem);
+            renderStations();
+            return;
+        }
+    }
+
+    // ===== إذا لم توجد دولة محفوظة، نضع currentFilterItem = null (صفحة الترحيب) =====
+    currentFilterItem = null;
+    renderCountriesList();
+    updateHeaderForFilter(currentFilterItem);
+    renderStations();
+}
+
+// ربط الدوال للنوافذ (نفس ما كان موجوداً)
+window.renderStations = renderStations;
+window.renderFavoritesTab = renderFavoritesTab;
+window.performSearch = performSearch;
+window.switchTab = switchTab;
+window.playStation = playStation;
+window.stopPlayback = stopPlayback;
+window.toggleFavorite = toggleFavorite;
+window.getStationsByFilter = getStationsByFilter;
+window.updateStationIcon = updateStationIcon;
+window.resetAddStationForm = resetAddStationForm;
+window.renderHistoryTab = renderHistoryTab;
+window.addNewStationFromForm = addNewStationFromForm;
+window.populateCountrySelect = populateCountrySelect;
+window.updateCurrentStationCountry = updateCurrentStationCountry;
+window.updateCurrentStationNameAndCountry = updateCurrentStationNameAndCountry;
+
+// ============================================================
+//  ضبط التخطيط تلقائياً عند تغيير حجم النافذة (لـ Windows)
+//  لا يؤثر على وضع ملء الشاشة (Maximized / Fullscreen)
+// ============================================================
+(function setupResponsiveLayout() {
+    'use strict';
+
+    // 1. تعريف نقاط التحول (breakpoints) – يمكنك تعديلها حسب رغبتك
+    const BREAKPOINTS = {
+        LARGE: 1200,    // أكبر من 1200 بكسل → تخطيط عادي (ملء الشاشة)
+        MEDIUM: 992,    // بين 992 و 1200 → تخطيط متوسط (تصغير طفيف)
+        SMALL: 768,     // بين 768 و 992 → تخطيط ضيق
+        TINY: 576       // أقل من 576 → تخطيط مكثف جداً
+    };
+
+    // 2. دالة تحديث التصنيفات بناءً على العرض الحالي
+    function updateLayoutClasses() {
+        // نأخذ عرض النافذة (بدون احتساب شريط التمرير)
+        const width = window.innerWidth;
+
+        // نزيل جميع التصنيفات القديمة
+        document.body.classList.remove(
+            'layout-large',
+            'layout-medium',
+            'layout-small',
+            'layout-tiny'
+        );
+
+        // نضيف التصنيف المناسب
+        if (width >= BREAKPOINTS.LARGE) {
+            document.body.classList.add('layout-large');
+        } else if (width >= BREAKPOINTS.MEDIUM) {
+            document.body.classList.add('layout-medium');
+        } else if (width >= BREAKPOINTS.SMALL) {
+            document.body.classList.add('layout-small');
+        } else {
+            document.body.classList.add('layout-tiny');
+        }
+    }
+
+    // 3. استدعاء الدالة فوراً عند التحميل
+    updateLayoutClasses();
+
+    // 4. مراقبة تغيير الحجم مع تحسين الأداء (باستخدام requestAnimationFrame)
+    let resizeTimer = null;
+    window.addEventListener('resize', function() {
+        if (resizeTimer) {
+            cancelAnimationFrame(resizeTimer);
+        }
+        resizeTimer = requestAnimationFrame(function() {
+            updateLayoutClasses();
+            resizeTimer = null;
+        });
+    });
+
+    console.log('✅ تم تفعيل التخطيط المتجاوب للشاشات الصغيرة.');
+})();
