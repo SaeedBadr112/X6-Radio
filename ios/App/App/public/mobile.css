@@ -1,0 +1,53 @@
+/* ================================================================
+   mobile.css
+   تعديلات خاصة بالتشغيل داخل تطبيق جوال (Capacitor - أندرويد/iOS).
+   لا يُعدّل style.css الأصلي، بل يضاف بعده في index.html.
+   ================================================================ */
+
+/* إخفاء شريط عنوان ويندوز المخصص (تصغير/تكبير/إغلاق) - لا معنى له على الجوال */
+.capacitor-native .custom-title-bar {
+    display: none !important;
+}
+
+/* إخفاء خيار "الوضع المصغر" من القائمة - غير منطقي على شاشة هاتف أصلاً */
+.capacitor-native #compactModeToggleItem {
+    display: none !important;
+}
+
+/* دعم مناطق الشاشة الآمنة (النوتش / زوايا الشاشة / شريط الحالة) على iOS و Android */
+.capacitor-native body,
+.capacitor-native .custom-title-bar,
+.capacitor-native .menu-bar {
+    padding-top: env(safe-area-inset-top);
+}
+
+.capacitor-native .player-bar {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.capacitor-native {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* السماح بالتحديد داخل حقول الإدخال والبحث فقط */
+.capacitor-native input,
+.capacitor-native textarea {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+/* تكبير مساحة اللمس لأزرار التحكم الرئيسية لتناسب الأصابع (44px حد أدنى موصى به) */
+.capacitor-native .player-btn,
+.capacitor-native .tab-btn,
+.capacitor-native .fav-star,
+.capacitor-native .play-station-btn {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* منع التكبير المزدوج بالنقر (double-tap zoom) الافتراضي في بعض الويب فيو */
+.capacitor-native * {
+    touch-action: manipulation;
+}

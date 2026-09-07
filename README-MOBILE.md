@@ -129,15 +129,20 @@ npx cap open android
 ## 4) ✅ تشغيل الصوت في الخلفية / عند قفل الشاشة (تم حلّه)
 
 ### iOS
-أضف في `ios/App/App/Info.plist`:
-```xml
-<key>UIBackgroundModes</key>
-<array>
-    <string>audio</string>
-</array>
-```
-هذا وحده يكفي لأن WKWebView يربط عنصر `<audio>` بجلسة AVAudioSession
-النظامية عند تفعيل هذه الخاصية.
+⚠️ **تحديث**: الجملة القديمة هنا كانت تقول إن إضافة `UIBackgroundModes`
+وحدها كافية — هذا غير دقيق بالكامل. تجارب مطورين حقيقيين مع Capacitor
+أظهرت أن WKWebView لا يفعّل جلسة AVAudioSession الصحيحة تلقائياً بشكل
+موثوق في كل الحالات، فقد يتوقف الصوت عند القفل. الحل الكامل (خطوة Xcode
++ سطرين Swift) موجود جاهزاً في **`ios-native-patch/README.md`** بجانب
+هذا الملف — اتبعه بالكامل بدل الاعتماد على `UIBackgroundModes` فقط.
+
+### iOS — السماح بروابط البث http:// (إلزامي، غير موجود سابقاً في هذا الملف)
+المشروع يحتوي على أكثر من 2300 محطة برابط `http://` غير مشفر. أندرويد
+يسمح بها (بفضل `allowMixedContent: true` في `capacitor.config.json`)،
+لكن iOS يمنعها تماماً بحماية اسمها App Transport Security (ATS) ما لم
+تُضِف استثناءً صريحاً في `Info.plist`. بدون هذا الاستثناء ستفشل كل هذه
+المحطات فوراً عند التشغيل على آيفون. الكود المطلوب لصقه جاهز في
+**`ios-native-patch/Info.plist-snippet.xml`**.
 
 ### أندرويد
 تم تنفيذ **Foreground Service أصلي حقيقي** (Java) + إشعار تحكم مرتبط
@@ -168,7 +173,11 @@ npx capacitor-assets generate
 - **أندرويد** (`android/app/src/main/AndroidManifest.xml`): `INTERNET` موجودة
   افتراضياً في مشروع Capacitor. أضف `FOREGROUND_SERVICE` و
   `POST_NOTIFICATIONS` (أندرويد 13+) إذا نفّذت حل الخلفية في الخطوة 4.
-- **iOS**: لا صلاحيات إضافية مطلوبة للبث نفسه، فقط `UIBackgroundModes` أعلاه.
+- **iOS**: لا توجد "صلاحيات" (Permissions) بالمعنى المعروف في أندرويد،
+  لكن هناك إعدادان إلزاميان في `Info.plist` بدونهما لن يعمل التطبيق
+  بشكل صحيح: `UIBackgroundModes` (للصوت في الخلفية) و
+  `NSAppTransportSecurity` (للسماح بروابط `http://`). راجع
+  `ios-native-patch/README.md` للتفاصيل الكاملة.
 
 ---
 
