@@ -1,8 +1,24 @@
 node_modules/
+node_modules/**
 .package-lock.json
 .gradle/
 build/
 android/app/build/
 android/.gradle/
+ios/App/build/
+ios/App/Pods/
+ios/App/output/
 .idea/
 .vscode/
+*.apk
+*.aab
+*.bundle
+*.idsig
+
+# ===== ملفات توقيع/مفاتيح حساسة - لا يجب رفعها لـ Git أبداً =====
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+*.p8
+keystore.properties
