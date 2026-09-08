@@ -1,44 +1,44 @@
 workflows:
-  ios-build:
-    name: iOS Build (Unsigned IPA)
-    instance_type: mac_mini_m2
-    max_build_duration: 60
-    environment:
-      node: 20
-      cocoapods: default
-      xcode: latest
-    scripts:
-      - name: تثبيت الاعتماديات
-        script: |
-          npm install
-      - name: مزامنة Capacitor iOS
-        script: |
-          npx cap sync ios
-      - name: تثبيت CocoaPods
-        script: |
-          cd ios/App
-          pod install
-          cd ../..
-      - name: بناء الأرشيف بدون توقيع
-        script: |
-          cd ios/App
-          xcodebuild -workspace App.xcworkspace \
-            -scheme App \
-            -configuration Release \
-            -destination 'generic/platform=iOS' \
-            -archivePath $PWD/build/App.xcarchive \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO
-      - name: إنشاء مجلد Payload وضغطه كـ IPA
-        script: |
-          cd ios/App/build
-          mkdir -p Payload
-          cp -r App.xcarchive/Products/Applications/App.app Payload/
-          zip -r -X App.ipa Payload/
-      - name: نقل ملف الـ IPA إلى مسار artifacts
-        script: |
-          cd ios/App/build
-          mkdir -p export
-          mv App.ipa export/
-    artifacts:
-      - ios/App/build/export/*.ipa
+ios-build:
+name: iOS Build (Unsigned IPA)
+instance_type: mac_mini_m2
+max_build_duration: 60
+environment:
+node: 20
+cocoapods: default
+xcode: latest
+scripts:
+- name: تثبيت الاعتماديات
+script: |
+npm install
+- name: مزامنة Capacitor iOS
+script: |
+npx cap sync ios
+- name: تثبيت CocoaPods
+script: |
+cd ios/App
+pod install
+cd ../..
+- name: بناء الأرشيف بدون توقيع
+script: |
+cd ios/App
+xcodebuild -workspace App.xcworkspace 
+-scheme App 
+-configuration Release 
+-destination 'generic/platform=iOS' 
+-archivePath $PWD/build/App.xcarchive 
+CODE_SIGNING_ALLOWED=NO 
+CODE_SIGNING_REQUIRED=NO
+- name: إنشاء مجلد Payload وضغطه كـ IPA
+script: |
+cd ios/App/build
+mkdir -p Payload
+cp -r App.xcarchive/Products/Applications/App.app Payload/
+zip -r -X App.ipa Payload/
+- name: نقل ملف الـ IPA إلى مسار artifacts
+script: |
+cd $CM_BUILD_DIR/ios/App/build
+mkdir -p export
+mv App.ipa export/
+artifacts:
+- ios/App/build/export/*.ipa
