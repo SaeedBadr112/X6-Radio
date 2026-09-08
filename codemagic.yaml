@@ -19,21 +19,15 @@ workflows:
           cd ios/App
           pod install
           cd ../..
-      - name: بناء الأرشيف بدون توقيع
+      - name: بناء وتصدير التطبيق بدون توقيع
         script: |
           cd ios/App
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
             -destination 'generic/platform=iOS' \
-            -archivePath $PWD/build/App.xcarchive \
             CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO
-      - name: إنشاء مجلد Payload وضغطه كـ IPA
-        script: |
-          cd ios/App/build
-          mkdir -p Payload
-          cp -r App.xcarchive/Products/Applications/*.app Payload/
-          zip -r App.ipa Payload
+            CODE_SIGNING_REQUIRED=NO \
+            clean build
     artifacts:
-      - ios/App/build/*.ipa
+      - /Users/builder/Library/Developer/Xcode/DerivedData/**/Build/Products/Release-iphoneos/*.app
