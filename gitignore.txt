@@ -1,0 +1,44 @@
+# تجاهل مجلدات الاعتماديات
+node_modules/
+desktop/node_modules/
+mobile/node_modules/
+
+# تجاهل مجلدات البناء والإخراج
+dist/
+desktop/dist/
+mobile/build/
+mobile/.gradle/
+mobile/Pods/
+
+# تجاهل ملفات التنفيذ
+*.exe
+*.dll
+*.apk
+*.ipa
+
+# تجاهل ملفات النظام المؤقتة
+*.log
+*.tmp
+*.swp
+*.swo
+
+# تجاهل ملفات إعدادات البناء الخاصة بـ Electron
+electron-builder.yml
+builder-debug.yml
+builder-effective-config.yaml
+latest.yml
+app-update.yml
+
+# تجاهل ملفات النظام (ويندوز وماك)
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# تجاهل ملفات التغطية والاختبار
+coverage/
+*.lcov
+
+# تجاهل بيئة التطوير
+.vscode/
+.idea/
