@@ -1,0 +1,46 @@
+name: Build and Sign Electron App
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js Environment
+      uses: actions/setup-node@v4
+      with:
+        node-size: 20
+        cache: 'npm'
+
+    - name: Install Project Dependencies
+      run: npm install
+
+    - name: Package Application with Electron Builder
+      run: npm run dist
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Sign Executable via SignPath Foundation
+      uses: signpath/github-action-submit-artifacts@v1
+      with:
+        api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+        organization-id: ${{ secrets.SIGNPATH_ORG_ID }}
+        project-slug: 'X6-Radio'
+        signing-policy-slug: 'release-signing'
+        artifact-configuration-slug: 'windows-executable'
+        input-artifact-path: 'dist/X6 Radio Setup *.exe'
+        output-artifact-path: 'dist/signed/'
+        wait-for-completion: true
+
+    - name: Upload Signed Executable to GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: dist/signed/*.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
